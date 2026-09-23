@@ -1,0 +1,79 @@
+/* Estilos da barra lateral. As classes "st-key-..." vêm das keys usadas em ui.py (key="nav_geral" → .st-key-nav_geral).
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Cartão verde de 120px com cantos arredondados, afastado das bordas da janela.
+   A largura mínima nativa da sidebar é 200px, por isso a largura é forçada. */
+[data-testid="stSidebar"] {
+  width: 120px !important;
+  min-width: 120px !important;
+  max-width: 120px !important;
+  height: calc(100dvh - 2rem);
+  margin: 1rem 0 1rem 1rem;
+  border-radius: 16px;
+}
+
+/* Com a largura fixa, a alça de redimensionar não faz sentido. */
+[data-testid="stSidebarResizeHandle"] {
+  display: none;
+}
+
+/* Sem o espaço reservado à barra de rolagem, os itens ocupam os 104px do design. */
+[data-testid="stSidebarContent"] {
+  padding: 24px 8px;
+  scrollbar-gutter: auto;
+}
+
+/* Logo no topo, 80px acima dos itens de navegação. */
+[data-testid="stSidebarHeader"] {
+  height: auto;
+  margin: 0 0 80px;
+  padding: 0;
+}
+
+[data-testid="stSidebarLogo"] {
+  height: 50px;
+  max-width: none;
+  margin: 0;
+}
+
+[data-testid="stSidebarUserContent"] {
+  padding: 0;
+}
+
+/* Itens de navegação: pílulas com o texto alinhado à esquerda. */
+.st-key-sidebar_nav button {
+  min-height: 0;
+  padding: 12px 16px;
+  border-radius: 100px;
+}
+
+/* O wrapper interno do botão ocupa a largura toda e centraliza o rótulo por padrão. */
+.st-key-sidebar_nav button > div {
+  justify-content: flex-start;
+}
+
+.st-key-sidebar_nav button p {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 17.36px;
+}
+
+/* Item ativo: pílula clara, igual em todos os estados. */
+.st-key-sidebar_nav [data-testid="stBaseButton-primary"],
+.st-key-sidebar_nav [data-testid="stBaseButton-primary"]:hover,
+.st-key-sidebar_nav [data-testid="stBaseButton-primary"]:active,
+.st-key-sidebar_nav [data-testid="stBaseButton-primary"]:focus:not(:active) {
+  border: none;
+  background-color: #f5f5f1;
+  color: #044947;
+}
+
+/* Itens inativos: texto branco sobre o fundo da sidebar, sem o hover verde nativo. */
+.st-key-sidebar_nav [data-testid="stBaseButton-tertiary"],
+.st-key-sidebar_nav [data-testid="stBaseButton-tertiary"]:hover,
+.st-key-sidebar_nav [data-testid="stBaseButton-tertiary"]:active,
+.st-key-sidebar_nav [data-testid="stBaseButton-tertiary"]:focus:not(:active) {
+  border: 1px solid transparent;
+  background-color: transparent;
+  color: #ffffff;
+}

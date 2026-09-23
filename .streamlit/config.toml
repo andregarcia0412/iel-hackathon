@@ -1,0 +1,30 @@
+# Tema do design "Hackathon Proenergia" (Figma). Só existe a versão clara.
+
+[server]
+# Serve src/iel_hackathon/static/ (ao lado do main.py) em app/static/: fontes e ícone do chat.
+enableStaticServing = true
+
+[theme]
+base = "light"
+primaryColor = "#044947"
+backgroundColor = "#F5F5F1"
+secondaryBackgroundColor = "#F9F9F5"
+textColor = "#1F1F1D"
+borderColor = "#D9D9D9"
+font = "Averta, sans-serif"
+
+[[theme.fontFaces]]
+family = "Averta"
+url = "app/static/fonts/Averta-Regular-normal-400-100.ttf"
+weight = 400
+style = "normal"
+
+[[theme.fontFaces]]
+family = "Averta"
+url = "app/static/fonts/Averta-Semibold-normal-600-100.ttf"
+weight = 600
+style = "normal"
+
+[theme.sidebar]
+backgroundColor = "#044947"
+textColor = "#FFFFFF"

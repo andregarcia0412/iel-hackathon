@@ -13,9 +13,6 @@ INPUT_PLACEHOLDER = "Digite sua mensagem..."
 ERROR_MESSAGE = "Não foi possível obter uma resposta do modelo. Tente novamente."
 
 _CSS_PATH = Path(__file__).with_name("chat.css")
-# O Streamlit não expõe as cores do tema como variáveis CSS; estes são os fundos padrão
-# dos temas claro e escuro, usados quando `theme.backgroundColor` não está configurado.
-_DEFAULT_BACKGROUND = {"light": "#ffffff", "dark": "#0e1117"}
 # Altura fixa exigida pelo `autoscroll`; o CSS a substitui para ocupar o espaço livre do painel.
 _MESSAGES_HEIGHT_PX = 400
 
@@ -34,12 +31,12 @@ def render_chat() -> None:
 def _chat() -> None:
     # Fragment: abrir, fechar e conversar re-executam só o chat, não a página inteira.
     # Os botões mostram só o ícone; o rótulo é ocultado pelo CSS, mas segue acessível.
+    # O ícone do botão flutuante (estrela do design) é aplicado pelo CSS.
     if not st.session_state.chat_open:
         st.button(
             "Abrir chat",
             key="chat_fab",
-            icon=":material/chat:",
-            type="primary",
+            type="tertiary",
             help="Abrir chat",
             on_click=_set_open,
             args=(True,),
@@ -47,7 +44,6 @@ def _chat() -> None:
         return
 
     with st.container(key="chat_panel"):
-        _panel_background()
         with st.container(key="chat_header", horizontal=True, vertical_alignment="center"):
             st.markdown(f"**{TITLE}**")
             st.space("stretch")
@@ -97,13 +93,6 @@ def _respond(prompt: str, history: list[model.Message]) -> None:
             st.error(ERROR_MESSAGE)
             return
     history.append({"role": "assistant", "content": str(reply)})
-
-
-def _panel_background() -> None:
-    color = st.get_option("theme.backgroundColor") or _DEFAULT_BACKGROUND.get(
-        st.context.theme.type or "light", _DEFAULT_BACKGROUND["light"]
-    )
-    st.html(f"<style>.st-key-chat_panel {{ background-color: {color}; }}</style>")
 
 
 def _set_open(is_open: bool) -> None:
