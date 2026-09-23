@@ -1,0 +1,62 @@
+/* Estilos do chat. As classes "st-key-..." vêm das keys usadas em ui.py (key="chat_fab" → .st-key-chat_fab).
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Botão flutuante: fica fixo no canto inferior direito, acima do conteúdo. */
+.st-key-chat_fab {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 999991;
+}
+
+.st-key-chat_fab button {
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.st-key-chat_fab button [data-testid="stIconMaterial"] {
+  font-size: 1.6rem;
+}
+
+/* Botões só com ícone: o rótulo continua acessível para leitores de tela, mas fica invisível. */
+.st-key-chat_fab button [data-testid="stMarkdownContainer"],
+.st-key-chat_clear button [data-testid="stMarkdownContainer"],
+.st-key-chat_close button [data-testid="stMarkdownContainer"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Painel lateral: sobrepõe a página pela direita, na altura toda da janela.
+   O z-index fica acima do cabeçalho do Streamlit (999990). */
+.st-key-chat_panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 999991;
+  width: min(420px, 100vw);
+  height: 100vh;
+  height: 100dvh;
+  padding: 1rem;
+  gap: 0.75rem;
+  border-left: 1px solid rgba(128, 128, 128, 0.3);
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+}
+
+/* A área de mensagens ocupa o espaço entre o cabeçalho e o campo de envio,
+   substituindo a altura fixa usada no Python (necessária para o autoscroll). */
+.st-key-chat_panel > [data-testid="stLayoutWrapper"]:has(> .st-key-chat_messages_box) {
+  flex: 1 1 0 !important;
+  height: auto !important;
+  min-height: 0;
+}
+
+.st-key-chat_messages_box {
+  height: 100% !important;
+}
