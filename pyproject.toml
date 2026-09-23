@@ -7,7 +7,9 @@ authors = [
     { name = "andregarcia0412", email = "andregarcia0412@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "streamlit>=1.64.0",
+]
 
 [project.scripts]
 iel-hackathon = "iel_hackathon:main"
