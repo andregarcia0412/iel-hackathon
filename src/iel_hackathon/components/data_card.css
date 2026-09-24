@@ -1,0 +1,76 @@
+/* Estilos do card de dados. As classes "data-card..." vêm da marcação gerada em data_card.py.
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Cartão branco com a sombra "sombra" do design. */
+.data-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+}
+
+.data-card p {
+  margin: 0;
+  line-height: normal;
+}
+
+.data-card__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #044947;
+}
+
+/* A caixa de texto do design tem 318px, o que define onde a descrição quebra de linha. */
+.data-card__description {
+  max-width: 318px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b6b66;
+}
+
+.data-card__highlight {
+  font-size: 28px;
+  font-weight: 600;
+  color: #044947;
+  white-space: nowrap;
+}
+
+/* Linha: ícone e rótulo à esquerda, valor à direita. */
+.data-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: #f9f9f5;
+}
+
+.data-card__icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.data-card__label {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b6b66;
+}
+
+.data-card__value {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f1f1d;
+  white-space: nowrap;
+}
+
+.data-card__footer {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9a9a94;
+}

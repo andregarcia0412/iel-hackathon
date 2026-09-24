@@ -1,0 +1,41 @@
+/* Estilos do card de métrica. As classes "metric-card..." vêm da marcação gerada em metric_card.py.
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Cartão branco com a sombra "sombra" do design. */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+}
+
+.metric-card p {
+  margin: 0;
+  line-height: normal;
+}
+
+.metric-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #044947;
+}
+
+.metric-card__value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f1f1d;
+}
+
+/* Variante verde, usada em valores de economia. */
+.metric-card__value--highlight {
+  color: #3b6d11;
+}
+
+.metric-card__caption {
+  font-size: 12px;
+  font-weight: 400;
+  color: #9a9a94;
+}
