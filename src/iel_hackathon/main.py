@@ -10,6 +10,7 @@ from iel_hackathon.components import (
     render_heatmap_table,
     render_metric_card,
 )
+from iel_hackathon.login import render_login
 from iel_hackathon.sidebar import render_sidebar
 
 SUBMERCADOS = ["Sudeste e Centro-oeste", "Sul", "Nordeste", "Norte"]
@@ -67,23 +68,38 @@ MAPE_TABLE = {
     "thresholds": (2, 4, 6),
 }
 
+
+def _login() -> None:
+    # Sem validação: qualquer email e senha, inclusive vazios, levam ao dashboard.
+    if render_login():
+        st.switch_page(DASHBOARD)
+
+
+def _dashboard() -> None:
+    render_sidebar()
+
+    with filter_bar():
+        render_filter("Submercado", SUBMERCADOS, key="filtro_submercado")
+        render_filter("Período", PERIODOS, key="filtro_periodo")
+
+    for column, card in zip(st.columns(len(CARDS), gap=12), CARDS):
+        with column:
+            render_metric_card(**card)
+
+    # Largura do card no design; sem ela o card esticaria na página toda.
+    with st.container(width=370):
+        render_data_card(**PERIOD_DATA)
+
+    render_heatmap_table(**MAPE_TABLE)
+
+    render_chat()
+
+
 # "locked": a barra lateral do design não recolhe.
 st.set_page_config(page_title="IEL Hackathon", initial_sidebar_state="locked")
 
-render_sidebar()
-
-with filter_bar():
-    render_filter("Submercado", SUBMERCADOS, key="filtro_submercado")
-    render_filter("Período", PERIODOS, key="filtro_periodo")
-
-for column, card in zip(st.columns(len(CARDS), gap=12), CARDS):
-    with column:
-        render_metric_card(**card)
-
-# Largura do card no design; sem ela o card esticaria na página toda.
-with st.container(width=370):
-    render_data_card(**PERIOD_DATA)
-
-render_heatmap_table(**MAPE_TABLE)
-
-render_chat()
+# O app abre no login; o dashboard também pode ser aberto direto em /dashboard.
+# A navegação nativa fica oculta: a sidebar do design só aparece no dashboard.
+LOGIN = st.Page(_login, title="Login", default=True)
+DASHBOARD = st.Page(_dashboard, title="Dashboard", url_path="dashboard")
+st.navigation([LOGIN, DASHBOARD], position="hidden").run()
