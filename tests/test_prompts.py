@@ -8,7 +8,6 @@ from iel_hackathon.components import DataRow, DataValue
 
 @pytest.fixture(autouse=True)
 def _no_file_secrets(monkeypatch):
-    """Ignora o .streamlit/secrets.toml local: estes testes dependem só das variáveis de ambiente."""
     monkeypatch.setattr(config, "_secret", lambda name: None)
 
 

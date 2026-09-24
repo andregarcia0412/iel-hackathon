@@ -1,8 +1,3 @@
-/* Estilos do filtro. A classe "st-key-filter_bar" vem da key do container criado em filter.py.
-   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
-
-/* Cada grupo: rótulo à esquerda das opções, com uma linha vertical separando-o do próximo.
-   Se não couber na largura, as opções descem para baixo do rótulo e quebram linha entre si. */
 .st-key-filter_bar [data-testid="stButtonGroup"] {
   display: flex;
   flex-wrap: wrap;
@@ -19,7 +14,6 @@
   border-right: 1px solid #6b6b66;
 }
 
-/* O rótulo não quebra nem encolhe; em telas estreitas quem quebra linha são as opções. */
 .st-key-filter_bar [data-testid="stWidgetLabel"] {
   flex-shrink: 0;
   min-height: 0;
@@ -35,20 +29,15 @@
   color: #044947;
 }
 
-/* No design o rótulo termina em dois-pontos ("Submercado:"); fica fora do texto do rótulo acessível. */
 .st-key-filter_bar [data-testid="stWidgetLabel"] p::after {
   content: ":";
 }
 
-/* Lista de opções (o div ao lado do rótulo). */
 .st-key-filter_bar [data-testid="stButtonGroup"] > div {
   flex-wrap: wrap;
   gap: 8px;
 }
 
-/* Opções. Os botões não têm data-testid: o estado vem de role="radio" e aria-checked.
-   As regras nativas de seleção e hover somam 4 classes/atributos; estes seletores têm um a mais para vencê-las,
-   o que também deixa a aparência igual em todos os estados (o design não tem hover). */
 .st-key-filter_bar [data-testid="stButtonGroup"] button[role="radio"] {
   height: auto;
   min-height: 0;
@@ -60,18 +49,15 @@
   line-height: 17.36px;
 }
 
-/* O rótulo da opção fica num markdown, que por padrão usa peso 400. */
 .st-key-filter_bar [data-testid="stButtonGroup"] button[role="radio"] p {
   font-weight: 600;
 }
 
-/* Opção não marcada: fundo branco. */
 .st-key-filter_bar [data-testid="stButtonGroup"] button[role="radio"][aria-checked="false"] {
   background-color: #ffffff;
   color: #044947;
 }
 
-/* Opção marcada: verde-escuro com texto branco. */
 .st-key-filter_bar [data-testid="stButtonGroup"] button[role="radio"][aria-checked="true"] {
   background-color: #044947;
   color: #ffffff;

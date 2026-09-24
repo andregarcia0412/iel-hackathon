@@ -28,7 +28,6 @@ def timestamp(value) -> pd.Timestamp:
 
 
 def strict_time(values):
-    """Inputs externos precisam explicitar UTC ou offset; nunca adivinhar fuso."""
     series = pd.Series(values)
     if not series.astype(str).str.contains(r"(?:Z|[+-]\d{2}:?\d{2})$", regex=True).all():
         raise ValueError("Timestamps externos devem incluir timezone, por exemplo -03:00 ou Z.")

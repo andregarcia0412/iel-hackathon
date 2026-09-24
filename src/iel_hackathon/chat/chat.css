@@ -1,9 +1,3 @@
-/* Estilos do chat, conforme o design "Hackathon Proenergia" (Figma, frames 50:16 e 56:319).
-   As classes "st-key-..." vêm das keys usadas em ui.py (key="chat_fab" → .st-key-chat_fab).
-   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro.
-   Os ícones são servidos pelo static serving (src/iel_hackathon/static/ em app/static/). */
-
-/* Botão flutuante: fica fixo no canto inferior direito, acima do conteúdo. */
 .st-key-chat_fab {
   position: fixed;
   right: 40px;
@@ -11,7 +5,6 @@
   z-index: 999991;
 }
 
-/* Círculo branco com a estrela do design, igual em todos os estados. */
 .st-key-chat_fab button,
 .st-key-chat_fab button:hover,
 .st-key-chat_fab button:active,
@@ -24,7 +17,6 @@
   box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
 }
 
-/* Botões só com ícone: o rótulo continua acessível para leitores de tela, mas fica invisível. */
 .st-key-chat_fab button [data-testid="stMarkdownContainer"],
 .st-key-chat_close button [data-testid="stMarkdownContainer"] {
   position: absolute;
@@ -35,8 +27,6 @@
   white-space: nowrap;
 }
 
-/* Painel: card flutuante no lugar do botão, acima do cabeçalho do Streamlit (z-index 999990).
-   Em telas pequenas encolhe para caber na janela. */
 .st-key-chat_panel {
   position: fixed;
   right: 40px;
@@ -54,8 +44,6 @@
   box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
 }
 
-/* Brilho verde e ciano no rodapé do card: o grupo de elipses desfocadas do design, exportado
-   do Figma já recortado pelo card (490×245). Fica atrás do conteúdo e não recebe cliques. */
 .st-key-chat_panel::before {
   content: "";
   position: absolute;
@@ -68,9 +56,6 @@
   pointer-events: none;
 }
 
-/* Abertura: o círculo da estrela cresce a partir do canto inferior direito até virar o painel.
-   A estrela gira e some enquanto o conteúdo aparece. Roda só quando o painel é montado, ou seja,
-   ao abrir; enviar mensagens não remonta o painel. O inverso, ao fechar, fica em chat_closing.css. */
 .st-key-chat_panel {
   animation: chat-panel-open 0.4s cubic-bezier(0.2, 0, 0, 1) backwards;
 }
@@ -80,7 +65,6 @@
   animation: chat-content-in 0.4s ease-out backwards;
 }
 
-/* A estrela do botão flutuante, no mesmo lugar em que estava (centro do círculo de 80px). */
 .st-key-chat_panel::after {
   content: "";
   position: absolute;
@@ -95,7 +79,6 @@
   animation: chat-star-out 0.28s ease-in;
 }
 
-/* O recorte final passa da borda para não cortar a sombra; o raio de 56px acompanha os 16px do card. */
 @keyframes chat-panel-open {
   from {
     clip-path: inset(calc(100% - 80px) 0 0 calc(100% - 80px) round 40px);
@@ -135,13 +118,10 @@
   }
 }
 
-/* O Streamlit puxa o texto em markdown 16px para cima (margem negativa), o que encolhe
-   o título e os balões; aqui cada bloco de texto ocupa só a própria altura. */
 .st-key-chat_panel [data-testid="stMarkdownContainer"] {
   margin-bottom: 0;
 }
 
-/* Cabeçalho: título e botão de fechar. */
 .st-key-chat_header [data-testid="stMarkdown"] p {
   margin: 0;
   font-size: 28px;
@@ -165,8 +145,6 @@
   background: url("app/static/icons/close.svg") center / 32px no-repeat;
 }
 
-/* A área de mensagens ocupa o espaço entre o cabeçalho e o campo de envio,
-   substituindo a altura fixa usada no Python (necessária para o autoscroll). */
 .st-key-chat_panel > [data-testid="stLayoutWrapper"]:has(> .st-key-chat_messages_box) {
   flex: 1 1 0 !important;
   height: auto !important;
@@ -178,7 +156,6 @@
   gap: 16px;
 }
 
-/* Estado vazio: estrela e convite centralizados na área de mensagens. */
 .st-key-chat_messages_box:has(.st-key-chat_empty) {
   justify-content: center;
 }
@@ -203,7 +180,6 @@
   opacity: 1;
 }
 
-/* Chips de sugestão no estado vazio: pílulas com borda verde-escura sob o convite. */
 .st-key-chat_empty [class*="st-key-chat_suggestion"] {
   width: 100%;
 }
@@ -228,8 +204,6 @@
   color: #044947;
 }
 
-/* Balões sem avatar: usuário à direita em verde claro, assistente à esquerda em cinza.
-   O canto do lado de quem fala fica reto. */
 .st-key-chat_panel [data-testid="stChatMessage"] {
   width: fit-content;
   max-width: 85%;
@@ -257,7 +231,6 @@
   color: #1f1f1d;
 }
 
-/* Campo de envio em pílula com borda verde-escura e o ícone de enviar do design. */
 .st-key-chat_panel [data-testid="stChatInput"] > div {
   padding: 12px 24px;
   border: 1px solid #044947;

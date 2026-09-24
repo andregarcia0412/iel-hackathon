@@ -152,7 +152,6 @@ def refit(bundle, features, output):
     models_dir.mkdir(parents=True, exist_ok=True)
     joblib.dump(bundle, models_dir / "forecast_bundle.joblib", compress=3)
     loaded = joblib.load(models_dir / "forecast_bundle.joblib")
-    # Round-trip verificado antes da abertura do teste, usando apenas X futuro sem avaliar y.
     sample = features[features.split.eq("test") & features.evaluation_eligible].groupby("horizon").head(24)
     np.testing.assert_allclose(bundle.predict(sample).pred_final, loaded.predict(sample).pred_final, rtol=0, atol=1e-9)
     return loaded

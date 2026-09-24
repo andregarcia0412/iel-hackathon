@@ -16,7 +16,6 @@ def _app() -> None:
 
 @pytest.fixture(autouse=True)
 def fake_configured_model(monkeypatch):
-    """Chat sempre "configurado" e com resposta fake; testes específicos sobrescrevem."""
     monkeypatch.setattr(model, "is_configured", lambda: True)
 
     def default_stream(messages: list[model.Message], snapshot: str) -> Iterator[str]:
@@ -43,7 +42,7 @@ def _button_keys(at: AppTest) -> list[str]:
 
 
 def _closing_style_injected(at: AppTest) -> bool:
-    return any("Fechamento do chat" in element.proto.body for element in at.get("html"))
+    return any("@keyframes chat-panel-close" in element.proto.body for element in at.get("html"))
 
 
 def _captions(at: AppTest) -> list[str]:
@@ -83,7 +82,6 @@ def test_clicking_suggestion_sends_it_as_user_message(at):
         {"role": "user", "content": prompts.SUGGESTIONS[0]},
         {"role": "assistant", "content": FAKE_REPLY},
     ]
-    # O chip some junto com o estado vazio depois da primeira mensagem.
     assert "chat_suggestion_0" not in _button_keys(at)
 
 
@@ -165,5 +163,4 @@ def test_missing_api_key_shows_friendly_message(at, monkeypatch):
 
 @pytest.mark.parametrize("css_path", [ui._CSS_PATH, ui._CLOSING_CSS_PATH])
 def test_css_has_no_less_than_sign(css_path):
-    # O sanitizador do frontend do Streamlit descarta o <style> inteiro se o CSS contiver "<".
     assert "<" not in css_path.read_text(encoding="utf-8")

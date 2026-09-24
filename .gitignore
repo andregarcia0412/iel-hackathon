@@ -1,4 +1,3 @@
-# Python-generated files
 __pycache__/
 *.py[oc]
 build/
@@ -6,11 +5,8 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
 .venv
 
-# Local env (chaves de API)
 .env
 
-# Streamlit secrets (chaves de API) — nunca commitar
 .streamlit/secrets.toml

@@ -22,7 +22,6 @@ def test_forecast_is_last_day_with_net_and_gross_by_hour():
 
     assert forecast.date == date(2026, 9, 22)
     assert len(forecast.net) == len(forecast.gross) == 24
-    # 12h de 22/09 em SE/CO, D+1: carga líquida final e bruta prevista pelo modelo.
     assert forecast.net[12] == pytest.approx(36_792, abs=1)
     assert forecast.gross[12] == pytest.approx(52_653, abs=1)
 
@@ -42,7 +41,6 @@ def test_forecast_rejects_unknown_submercado():
 
 
 def _month(submercado: str, horizon: int) -> pd.DataFrame:
-    """Linhas do CSV do mês com a carga real e a previsão de cada abordagem lado a lado."""
     predictions = pd.read_csv(PREDICTIONS)
     rows = predictions[(predictions["submercado"] == submercado) & (predictions["horizon"] == horizon)]
     return rows.pivot(index="target_time", columns="approach", values="prediction_mw").join(
@@ -63,7 +61,6 @@ def test_period_summary_matches_the_csv():
     assert summary.mape_decomposed == pytest.approx(
         ((rows["net"] - rows["decomposed"]).abs() / rows["net"]).mean() * 100
     )
-    # No mês, a previsão final erra menos que o baseline em SE/CO.
     assert summary.avoided_error_mwh > 0
 
 
@@ -95,7 +92,6 @@ def test_day_context_is_the_forecast_day_at_13h():
     assert context.net_change_mw == pytest.approx(row["final"] - row["baseline"])
     assert context.temperature_c == pytest.approx(27.35, abs=0.01)
     assert context.radiation_wm2 == pytest.approx(623.76, abs=0.01)
-    # Último mês publicado até 22/09/2026 é agosto.
     assert context.mmgd_capacity_mw == pytest.approx(26_339.945)
     assert context.day_type == "dia útil"
 

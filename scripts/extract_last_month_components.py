@@ -1,11 +1,3 @@
-"""Extrai dos artefatos do modelo o que o dashboard usa além de data/last_month_predictions.csv.
-
-O last_month_predictions.csv só traz a carga líquida (real e prevista por abordagem). Das previsões de teste do modelo vêm,
-para a mesma janela, a carga bruta prevista, o PLD, a meteorologia prevista e o calendário
-(data/last_month_components.csv). Da tabela auxiliar da ANEEL vem a potência de MMGD instalada (data/mmgd_capacity.csv).
-Uso: uv run python scripts/extract_last_month_components.py
-"""
-
 from pathlib import Path
 
 import pandas as pd
@@ -22,10 +14,8 @@ KEYS = ["target_time", "submercado", "horizon"]
 COLUMNS = [
     "pred_gross",
     "pld_brl_mwh",
-    # Previsões meteorológicas usadas pelo modelo: °C e W/m² médios da hora.
     "temperature",
     "radiation",
-    # Calendário: dia da semana (0 = segunda) e flags de feriado/emenda.
     "weekday",
     "feriado_nacional",
     "carnaval",
@@ -41,7 +31,6 @@ CAPACITY_COLUMNS = ["submercado", "mes", "mw_acumulado"]
 def main() -> None:
     window = pd.read_csv(PREDICTIONS, usecols=KEYS).drop_duplicates()
     components = pd.read_csv(SOURCE, usecols=[*KEYS, *COLUMNS])
-    # Mesmas linhas (hora, submercado, horizonte) do last_month_predictions.csv.
     extracted = window.merge(components, on=KEYS, how="left", validate="one_to_one")
     missing = extracted[COLUMNS].isna().sum()
     if missing.any():

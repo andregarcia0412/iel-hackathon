@@ -69,5 +69,4 @@ def test_submitting_any_values_is_accepted(at, mode):
 
 
 def test_css_has_no_less_than_sign():
-    # O sanitizador do frontend do Streamlit descarta o <style> inteiro se o CSS contiver "<".
     assert "<" not in ui._CSS_PATH.read_text(encoding="utf-8")

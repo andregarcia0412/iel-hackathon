@@ -1,5 +1,3 @@
-"""Card de dados: título, descrição, valor em destaque, linhas com ícone e rodapé, como o "Dados do período"."""
-
 from collections.abc import Sequence
 from dataclasses import dataclass
 from html import escape
@@ -11,7 +9,6 @@ import streamlit as st
 IconName = Literal["sunny", "power", "thermometer", "calendar_today"]
 
 _CSS_PATH = Path(__file__).with_name("data_card.css")
-# Os ícones do design ficam no static serving (src/iel_hackathon/static/), servidos em app/static/.
 _ICONS_DIR = Path(__file__).parent.parent / "static" / "icons"
 _ICONS_URL = "app/static/icons"
 _MISSING = "—"
@@ -19,8 +16,6 @@ _MISSING = "—"
 
 @dataclass(frozen=True, kw_only=True)
 class DataValue:
-    """Valor já formatado + unidade. Sem valor, mostra o placeholder (padrão: "— {unidade}")."""
-
     value: str | None
     unit: str | None = None
     placeholder: str | None = None
@@ -36,8 +31,6 @@ class DataValue:
 
 @dataclass(frozen=True, kw_only=True)
 class DataRow(DataValue):
-    """Linha do card: ícone opcional, rótulo à esquerda e valor à direita."""
-
     label: str
     icon: IconName | None = None
 
@@ -50,8 +43,6 @@ def render_data_card(
     rows: Sequence[DataRow] | None = None,
     footer: str | None = None,
 ) -> None:
-    """Renderiza o card de dados. Cada parte só aparece se for passada."""
-    # CSS só com <style> vai para o container de eventos do Streamlit: repeti-lo a cada card não ocupa espaço.
     st.html(_CSS_PATH)
     st.html(_markup(title=title, description=description, highlight=highlight, rows=rows, footer=footer))
 

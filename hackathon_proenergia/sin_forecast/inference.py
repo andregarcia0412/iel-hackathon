@@ -39,7 +39,6 @@ def apply_scenario(frame, overrides):
         result["feriado_nacional"] = int(value)
         result["intensidade_feriado"] = float(value)
         result["frac_pop_feriado_estadual"] = 0
-        # O cenário substitui a classificação do próprio dia; datas adjacentes permanecem reais.
         for column in ["carnaval", "corpus_christi", "quarta_cinzas", "emenda"]:
             result[column] = 0
     result = derive_weather(result)
@@ -106,7 +105,6 @@ def external_history(path):
 
 
 def predict_request(request, artifact_dir: Path):
-    """Inferência com dados atualizados fornecidos pelo chamador; não consulta observações futuras."""
     bundle = joblib.load(artifact_dir / "models" / "forecast_bundle.joblib")
     origin = strict_time([request["origin_time"]]).iloc[0]
     if origin != origin.normalize():

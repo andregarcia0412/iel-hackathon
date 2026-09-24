@@ -1,7 +1,4 @@
-# Tema do design "Hackathon Proenergia" (Figma). Só existe a versão clara.
-
 [server]
-# Serve src/iel_hackathon/static/ (ao lado do main.py) em app/static/: fontes, ícones e imagens.
 enableStaticServing = true
 
 [theme]
@@ -29,7 +26,6 @@ style = "normal"
 backgroundColor = "#044947"
 textColor = "#FFFFFF"
 
-# Fonte do título da tela de login.
 [[theme.fontFaces]]
 family = "Balkist"
 url = "app/static/fonts/Balkist-normal-400-100.ttf"

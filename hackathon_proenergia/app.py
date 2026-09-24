@@ -54,7 +54,6 @@ def main():
             holiday = st.selectbox("Calendário do dia", ["Original", "Simular feriado", "Simular dia sem feriado"])
             st.form_submit_button("Calcular cenário", type="primary")
     rows = subset[subset.target_date.eq(target_date)].drop(columns="target_date")
-    # Retirar saídas salvas: todas as curvas de cenário são recalculadas pelo modelo persistido.
     rows = rows.drop(columns=[c for c in rows if c.startswith(("pred_", "error_", "absolute_error_", "ape_"))])
     overrides = {"temperature_delta": temperature_delta, "radiation_multiplier": radiation_multiplier,
                  "cloud_override": float(cloud) if change_cloud else None,

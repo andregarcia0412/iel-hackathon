@@ -1,10 +1,7 @@
-"""Tela de entrada: abas de Login e Cadastro com email e senha, sem validação nem integração."""
-
 from pathlib import Path
 
 import streamlit as st
 
-# Aba → (título do card, rótulo do botão). As duas abas têm os mesmos campos.
 MODES = {"Login": ("Login", "Entrar"), "Cadastro": ("Cadastro", "Cadastrar")}
 DEFAULT_MODE = "Login"
 EMAIL_PLACEHOLDER = "Digite seu e-mail..."
@@ -19,7 +16,6 @@ _TITLE_MARKUP = '<h1 class="login-title">Seja muito bem-vindo ao <span>SinVision
 
 
 def render_login() -> bool:
-    """Renderiza a tela de entrada e retorna True quando o formulário é enviado, com quaisquer valores."""
     mode = st.session_state.setdefault("login_mode", DEFAULT_MODE)
     title, submit_label = MODES[mode]
     st.html(_CSS_PATH)
@@ -48,7 +44,6 @@ def render_login() -> bool:
 
 
 def _tabs() -> None:
-    # A aba ativa é "primary" e a outra "secondary"; o CSS estiliza cada tipo, como na sidebar.
     with st.container(key="login_tabs", horizontal=True):
         for mode in MODES:
             st.button(

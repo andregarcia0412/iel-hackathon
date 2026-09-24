@@ -1,5 +1,3 @@
-"""Gráfico de cargas do dia: carga líquida, carga bruta e MMGD (a área entre as duas), hora a hora, como o "Previsão de Cargas"."""
-
 import base64
 import math
 from collections.abc import Sequence
@@ -13,15 +11,10 @@ _CSS_PATH = Path(__file__).with_name("load_chart.css")
 
 _HOURS = 24
 _Y_TICKS = 8
-# Altura da área do gráfico no design, em px.
 _HEIGHT = 254
-# Fração do topo reservada às anotações: no design, o pico das curvas fica a 71 dos 254 px.
 _HEADROOM = 0.28
-# Largura de cada hora no viewBox do SVG. O SVG estica na largura do card; as linhas não engrossam (non-scaling-stroke).
 _HOUR_WIDTH = 10
-# Altura, em px, do traço da rampa e do início da linha do vale (logo abaixo dos textos).
 _ANNOTATION_Y = 38
-# Passos "redondos" do eixo Y, multiplicados por potências de 10.
 _NICE_STEPS = (1, 2, 2.5, 4, 5)
 _MISSING = "--"
 
@@ -33,13 +26,6 @@ def render_load_chart(
     solar_window: tuple[int, int] = (8, 16),
     ramp: tuple[int, int] = (16, 19),
 ) -> None:
-    """Renderiza o gráfico de um dia, com `net` e `gross` em MW para cada hora (0h–23h); `None` deixa a hora vazia.
-
-    A faixa `solar_window` (horas de início e fim) é destacada e marca o vale: a hora de menor carga líquida dentro dela.
-    `ramp` marca o intervalo da rampa de fim de tarde.
-    Com o mouse sobre uma hora, um card mostra a carga líquida, a bruta e a MMGD (bruta − líquida) daquela hora.
-    """
-    # CSS só com <style> vai para o container de eventos do Streamlit: repeti-lo a cada gráfico não ocupa espaço.
     st.html(_CSS_PATH)
     st.html(_markup(net=net, gross=gross, solar_window=solar_window, ramp=ramp))
 
@@ -119,7 +105,6 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
             for hour in solar_window
         )
     )
-    # MMGD: a área entre a carga bruta (em cima) e a líquida (embaixo), em cada trecho com as duas séries.
     both = [(n, g) if n is not None and g is not None else None for n, g in zip(net, gross)]
     area = "".join(
         f'<polygon points="{_points([(h, g) for h, (_, g) in run] + [(h, n) for h, (n, _) in reversed(run)], y)}" '
@@ -144,7 +129,6 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
         "</linearGradient></defs>"
     )
 
-    # Vale: linha tracejada do texto até a carga líquida, na hora de menor carga líquida da faixa solar.
     valley = _valley(net, solar_window)
     valley_line = ""
     annotations = []
@@ -159,7 +143,6 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
         f'<line x1="{_x(ramp_start)}" y1="{_ANNOTATION_Y}" x2="{_x(ramp_end)}" y2="{_ANNOTATION_Y}" '
         'stroke="#9A9A94" stroke-width="1.439" vector-effect="non-scaling-stroke"/>'
     )
-    # Como no design, o texto da rampa começa junto do traço, e não no meio dele.
     annotations.append(_annotation(f"Rampa {ramp_start}h–{ramp_end}h", ramp_start, align="start"))
 
     svg = (
@@ -167,7 +150,6 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
         f"{gradient}{band}{area}{gross_line}{net_line}{valley_line}{ramp_line}"
         "</svg>"
     )
-    # O st.html descarta <svg> embutido; como imagem, o SVG passa e estica na largura do card.
     src = "data:image/svg+xml;base64," + base64.b64encode(svg.encode()).decode()
     image = (
         f'<img class="load-chart__svg" src="{src}" '
@@ -177,13 +159,8 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
 
 
 def _tooltips(net, gross, y) -> str:
-    """Uma faixa por hora que, com o mouse em cima, mostra a linha da hora, os pontos das curvas e os três valores.
-
-    Só HTML e CSS: o st.html não roda JavaScript. A MMGD é a bruta − a líquida, a mesma área desenhada no gráfico.
-    """
     zones = []
     for hour in range(_HOURS):
-        # A faixa vai de meia hora antes a meia hora depois; a primeira começa em 0h e a última vai até 24h.
         start = max(hour - 0.5, 0)
         end = _HOURS if hour == _HOURS - 1 else hour + 0.5
         guide = _percent((hour - start) / (end - start))
@@ -205,7 +182,6 @@ def _tooltips(net, gross, y) -> str:
                 ("mmgd", "MMGD", mmgd),
             )
         )
-        # Até o meio do dia o card abre à direita da linha; depois, à esquerda, para não sair do gráfico.
         side = "right" if hour < _HOURS // 2 else "left"
         zones.append(
             f'<div class="load-chart__hover" style="left: {_percent(start / _HOURS)}; '
@@ -221,7 +197,6 @@ def _tooltips(net, gross, y) -> str:
 
 
 def _annotation(text: str, hour: float, *, align: Literal["center", "start"]) -> str:
-    """Texto acima do gráfico, na hora `hour`: centralizado nela ou começando nela."""
     return (
         f'<p class="load-chart__annotation load-chart__annotation--{align}" '
         f'style="left: {_percent(hour / _HOURS)}">{escape(text)}</p>'
@@ -235,7 +210,6 @@ def _valley(net: Sequence[float | None], solar_window: tuple[int, int]) -> int |
 
 
 def _runs(values):
-    """Trechos de horas seguidas com valor, como listas de (hora, valor): uma hora vazia quebra a linha."""
     runs, current = [], []
     for hour, value in enumerate(values):
         if value is None:
@@ -262,7 +236,6 @@ def _percent(fraction: float) -> str:
 
 
 def _y_scale(minimum: float, maximum: float) -> tuple[float, float]:
-    """Base e passo do eixo Y: o menor passo redondo em que as curvas cabem abaixo da faixa das anotações."""
     exponent = math.floor(math.log10(max(abs(maximum), 1e-9))) - 3
     while True:
         for nice in _NICE_STEPS:

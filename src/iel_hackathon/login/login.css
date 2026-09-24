@@ -1,10 +1,3 @@
-/* Estilos da tela de login, conforme o design "Hackathon Proenergia" (Figma, frame 29:3151).
-   As classes "st-key-..." vêm das keys usadas em ui.py (key="login_card" → .st-key-login_card).
-   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro.
-   As imagens são servidas pelo static serving (src/iel_hackathon/static/ em app/static/). */
-
-/* Fundo: foto com gradiente escuro no rodapé. No design a foto (1600×900) cobre a altura
-   da tela e fica deslocada para a direita; 28.4% reproduz esse recorte a 1440×1024. */
 [data-testid="stApp"] {
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0) 65.865%, rgba(0, 0, 0, 0.75) 100%),
@@ -12,18 +5,15 @@
     #f5f5f1;
 }
 
-/* Sem o cabeçalho nativo: ele cobriria a foto com a cor de fundo do tema. */
 [data-testid="stHeader"] {
   display: none;
 }
 
-/* Conteúdo alinhado à esquerda, a 126px da borda e 60px do topo, como no design. */
 [data-testid="stMainBlockContainer"] {
   max-width: none;
   padding: 60px 16px 0 clamp(16px, 8.75vw, 126px);
 }
 
-/* Linhas verdes no alto à direita: o grupo do design, recortado pelo frame de 531×285. */
 .st-key-login_page::after {
   content: "";
   position: fixed;
@@ -35,16 +25,12 @@
   pointer-events: none;
 }
 
-/* Em janelas estreitas as linhas cobririam o título e o card (que terminam a 616px da esquerda). */
 @media (max-width: 1139px) {
   .st-key-login_page::after {
     display: none;
   }
 }
 
-/* Logo no topo e o bloco título + card centralizado na altura da janela.
-   O padding de baixo repete a altura acima do bloco (60 + logo 87.58 + espaço 24) para o centro
-   coincidir com o da janela; em janelas baixas o espaço mínimo entre o logo e o título é de 24px. */
 .st-key-login_page {
   min-height: calc(100dvh - 60px);
   gap: 24px;
@@ -82,7 +68,6 @@
   color: #044947;
 }
 
-/* Card com a sombra "sombra" do design. */
 .st-key-login_card {
   width: min(490px, 100%);
   gap: 40px;
@@ -96,7 +81,6 @@
   gap: 8px;
 }
 
-/* O Streamlit puxa o texto em markdown 16px para cima (margem negativa); aqui o título ocupa só a própria altura. */
 .st-key-login_header [data-testid="stMarkdownContainer"] {
   margin-bottom: 0;
 }
@@ -109,7 +93,6 @@
   color: #044947;
 }
 
-/* Abas: a ativa é verde-escura e a inativa branca, iguais em todos os estados. */
 .st-key-login_tabs {
   gap: 14px;
 }
@@ -121,7 +104,6 @@
   border-radius: 8px;
 }
 
-/* O rótulo herda a altura de linha do markdown (22.4px); aqui fica a do design para a pílula ter 34px. */
 .st-key-login_tabs button,
 .st-key-login_tabs button [data-testid="stMarkdownContainer"],
 .st-key-login_tabs button p {
@@ -149,7 +131,6 @@
   color: #044947;
 }
 
-/* Formulário sem moldura: campos e botão separados por 40px. */
 .st-key-login_card [data-testid="stForm"] {
   padding: 0;
   border: none;
@@ -163,7 +144,6 @@
   gap: 16px;
 }
 
-/* Campos: rótulo 12px acima de uma pílula branca com borda verde-escura. */
 .st-key-login_fields [data-testid="stWidgetLabel"] {
   min-height: 0;
   margin: 0 0 12px;
@@ -200,12 +180,10 @@
   opacity: 1;
 }
 
-/* Sem a dica "Press Enter to submit form" dentro do campo. */
 .st-key-login_fields [data-testid="InputInstructions"] {
   display: none;
 }
 
-/* Botão de mostrar/ocultar senha com o olho do design, nos dois estados. */
 .st-key-login_password [data-testid="stTextInputRootElement"] button,
 .st-key-login_password [data-testid="stTextInputRootElement"] button:hover {
   width: 24px;
@@ -221,7 +199,6 @@
   display: none;
 }
 
-/* Botão de enviar: pílula verde-escura, igual em todos os estados. */
 .st-key-login_submit button,
 .st-key-login_submit button:hover,
 .st-key-login_submit button:active,

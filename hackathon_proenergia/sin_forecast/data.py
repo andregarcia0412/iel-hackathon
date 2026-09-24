@@ -48,7 +48,6 @@ def hourly_load(raw: pd.DataFrame):
         h[f"{target}_raw"] = h[target]
         h.loc[~h.quality_ok, target] = np.nan
     h = h.reset_index()
-    # Grade comum: shift representa horas, inclusive quando uma observação está ausente.
     grid = pd.MultiIndex.from_product([
         SUBMARKETS, pd.date_range(h.target_time.min(), h.target_time.max(), freq="h")
     ], names=["submercado", "target_time"])
@@ -78,7 +77,6 @@ def load_calendar(z: zipfile.ZipFile):
 
 
 def climate_from_raw(path: Path):
-    """Reconstrói pesos documentados e nunca preenche previsão com observado."""
     variables = {"temperature": "temperature_2m", "radiation": "shortwave_radiation",
                  "cloud": "cloud_cover", "humidity": "relative_humidity_2m"}
     full_variables = [*variables.values(), "direct_radiation", "diffuse_radiation"]
@@ -102,7 +100,6 @@ def climate_from_raw(path: Path):
             agg[new] = d[f"{old}_previous_day{horizon}"] * d.weight
         a = agg.groupby(["submercado", "target_time"]).sum(min_count=1).reset_index()
         a["weather_valid"] = a.missing_weight.lt(1e-8)
-        # A radiação em u representa [u-1h,u); temperatura permanece instantânea em t.
         radiation = a[["submercado", "target_time", "radiation", "weather_valid"]].copy()
         radiation["target_time"] -= pd.Timedelta(hours=1)
         radiation = radiation.rename(columns={"weather_valid": "radiation_valid"})
@@ -112,7 +109,6 @@ def climate_from_raw(path: Path):
         a["weather_issued_at_max"] = a.target_time + pd.Timedelta(hours=1) - pd.Timedelta(days=horizon)
         a["weather_source"] = "Open-Meteo Previous Runs; offset nominal; radiação realinhada"
         a.loc[~a.weather_valid, list(variables)] = np.nan
-        # Checagens físicas amplas, definidas sem observar desempenho de modelos.
         physical = a.temperature.between(-30, 55) & a.radiation.between(0, 1500) & a.cloud.between(0, 100) & a.humidity.between(0, 100)
         a["weather_valid"] &= physical
         a.loc[~a.weather_valid, list(variables)] = np.nan

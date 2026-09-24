@@ -1,4 +1,3 @@
-"""CLI reproduzível. Execute `python run.py --help`."""
 from __future__ import annotations
 
 import argparse

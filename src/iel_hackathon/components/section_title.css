@@ -1,7 +1,3 @@
-/* Estilo do título de seção. A classe "section-title" vem da marcação gerada em section_title.py.
-   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
-
-/* Mesmo estilo do título da tabela de calor. */
 .section-title {
   margin: 0;
   line-height: normal;

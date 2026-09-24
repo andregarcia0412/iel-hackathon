@@ -1,17 +1,7 @@
-"""Prompts de administração do assistente: guardrails, escopo e contexto do dashboard.
-
-Este módulo é a "alma" do agente — o system prompt define quem ele é, o que ele
-pode responder (apenas o dashboard) e como recusar o resto. O snapshot transforma
-os valores que estão na tela em texto, para o modelo nunca inventar números.
-"""
-
 import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-# Resposta única para qualquer assunto fora do dashboard. Usada tanto pelo
-# filtro prévio quanto instruída ao modelo no system prompt (as duas camadas
-# devem convergir para o mesmo texto, para o comportamento ser previsível).
 REFUSAL_MESSAGE = (
     "Sou o assistente deste dashboard de previsão de carga de energia e só "
     "posso ajudar com os gráficos e valores exibidos aqui. Posso explicar o "
@@ -19,19 +9,12 @@ REFUSAL_MESSAGE = (
     "perguntar!"
 )
 
-# Filtro prévio leve: termos claramente fora do domínio respondem com a recusa
-# sem nem chamar o LLM (economiza tokens e evita que modelos pequenos vazem do
-# escopo). Propositalmente conservador — só bloqueia o óbvio; o resto fica com
-# o system prompt.
 _OUT_OF_SCOPE_PATTERN = re.compile(
     r"\b(piada|futebol|receita|política|eleição|horóscopo|filme|novela|"
     r"cantad[ao]|versiculo|bíblia)\b",
     re.IGNORECASE,
 )
 
-# Prompts de sugestão mostrados como chips no estado vazio do chat. Servem para
-# o usuário entender a ferramenta: exemplificam valores do dashboard ou o motivo
-# de um gráfico. Ao atualizar o dashboard, revise esta lista.
 SUGGESTIONS = [
     "Como ler o heatmap de MAPE por submercado?",
     "Por que a carga líquida cai no horário de sol no gráfico de previsão?",
@@ -93,21 +76,14 @@ ou marcadores curtos quando fizer sentido).
 
 
 def is_out_of_scope(text: str) -> bool:
-    """Filtro prévio: `True` quando a pergunta é claramente fora do dashboard."""
     return bool(_OUT_OF_SCOPE_PATTERN.search(text))
 
 
 def build_system_prompt(snapshot: str) -> str:
-    """System prompt final: guardrails + instantâneo textual dos valores na tela."""
     return _SYSTEM_PROMPT.format(recusa=REFUSAL_MESSAGE, snapshot=snapshot)
 
 
 def build_dashboard_snapshot(data: Mapping[str, Any] | None) -> str:
-    """Converte os dados renderizados no dashboard em texto para o system prompt.
-
-    `data` é o dicionário montado na página (ver `main.py`). Qualquer parte
-    ausente vira "ainda não carregada", nunca um número inventado.
-    """
     if not data:
         return "Nenhum dado do dashboard foi carregado ainda."
 

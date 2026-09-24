@@ -1,5 +1,3 @@
-"""Tabela de calor: células coloridas por faixa de valor, como a "MAPE por submercado e faixa horária"."""
-
 import math
 from bisect import bisect_left
 from collections.abc import Mapping, Sequence
@@ -16,10 +14,8 @@ _YELLOW = "#feffd9"
 _ORANGE = "#ffefd9"
 _RED = "#ffd9d9"
 
-# Cores das faixas, do menor valor para o maior.
 BAND_COLORS = (_GREEN, _YELLOW, _ORANGE, _RED)
 
-# Cor de cada célula vazia no design (linha × coluna). Em tabelas maiores, o padrão se repete em ciclo.
 EMPTY_COLORS = (
     (_GREEN, _YELLOW, _GREEN, _YELLOW, _ORANGE),
     (_YELLOW, _RED, _YELLOW, _ORANGE, _YELLOW),
@@ -40,14 +36,6 @@ def render_heatmap_table(
     placeholder: str = "—",
     title: str | None = None,
 ) -> None:
-    """Renderiza a tabela, com os valores em % (ex.: "2,13%").
-
-    `values[linha][coluna]` é o valor da célula; linha ou coluna ausente, `None` ou `NaN` deixam a célula vazia,
-    com `placeholder` e a cor de `empty_colors` naquela posição.
-    `thresholds` são os limites crescentes entre as faixas e `colors` tem uma cor a mais que eles:
-    com (2, 4, 6), até 2 usa a 1ª cor, até 4 a 2ª, até 6 a 3ª e acima de 6 a 4ª.
-    """
-    # CSS só com <style> vai para o container de eventos do Streamlit: repeti-lo a cada tabela não ocupa espaço.
     st.html(_CSS_PATH)
     st.html(
         _markup(

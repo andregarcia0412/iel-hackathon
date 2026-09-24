@@ -1,10 +1,3 @@
-/* Fechamento do chat: o painel encolhe de volta até o círculo da estrela, o inverso da abertura em chat.css.
-   Como o Streamlit remove o painel ao fechar, quem anima é o botão flutuante que o substitui:
-   um card do tamanho do painel atrás dele encolhe até o círculo e a estrela volta girando.
-   Este arquivo só é injetado na execução logo após fechar (ui.py), então a animação não roda ao carregar a página.
-   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
-
-/* Fica atrás do botão (o botão fixo já cria o próprio contexto de empilhamento) e não recebe cliques. */
 .st-key-chat_fab::before {
   content: "";
   position: absolute;

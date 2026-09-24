@@ -27,22 +27,17 @@ from iel_hackathon.forecast import (
 from iel_hackathon.login import render_login
 from iel_hackathon.sidebar import render_sidebar
 
-# Opções dos filtros → código do submercado e horizonte (em dias) nas previsões do modelo.
 SUBMERCADOS = {"Sudeste e Centro-oeste": "SECO", "Sul": "S", "Nordeste": "NE", "Norte": "N"}
 PERIODOS = {"Próximo dia": 1, "Próximos 7 dias": 7}
-# Linhas da tabela de MAPE → código do submercado.
 MAPE_ROWS = {"SE/CO": "SECO", "S": "S", "NE": "NE", "N": "N"}
 
-# Layout da página: ocupa a janela inteira e reorganiza os cards em telas estreitas.
 _CSS_PATH = Path(__file__).with_name("dashboard.css")
 
-# Tabela de MAPE da previsão final; os valores vêm do horizonte do filtro.
 MAPE_TABLE = {
     "title": "MAPE por submercado e faixa horária",
     "rows_label": "Submercado",
     "rows": list(MAPE_ROWS),
     "columns": [label for label, _, _ in MAPE_BANDS],
-    # Verde até 2%, amarelo até 4%, laranja até 6%, vermelho acima.
     "thresholds": (2, 4, 6),
 }
 
@@ -93,7 +88,6 @@ def _period_data(context: DayContext, horizon: int) -> dict:
 
 
 def _number(value: float, decimals: int, *, signed: bool = False) -> str:
-    """Número em pt-BR: ponto nos milhares, vírgula nos decimais e sinal de menos tipográfico."""
     text = f"{value:{'+' if signed else ''},.{decimals}f}"
     return text.replace(",", "_").replace(".", ",").replace("_", ".").replace("-", "−")
 
@@ -104,7 +98,6 @@ def _brl_millions(value: float) -> str:
 
 
 def _login() -> None:
-    # Sem validação: qualquer email e senha, inclusive vazios, levam ao dashboard.
     if render_login():
         st.switch_page(DASHBOARD)
 
@@ -118,8 +111,6 @@ def _dashboard() -> None:
         periodo = render_filter("Período", list(PERIODOS), key="filtro_periodo")
     codigo, horizonte = SUBMERCADOS[submercado], PERIODOS[periodo]
 
-    # Valores do dashboard calculados uma vez: renderizados na tela e expostos ao assistente
-    # do chat via `dashboard_data` (ver chat/prompts.py → build_dashboard_snapshot).
     cards = _metric_cards(load_period_summary(codigo, horizonte))
     forecast = load_day_forecast(codigo, horizonte)
     period_data = _period_data(load_day_context(codigo, horizonte), horizonte)
@@ -139,7 +130,6 @@ def _dashboard() -> None:
         },
     }
 
-    # As keys dos containers são usadas pelo dashboard.css para distribuir a largura e a altura da janela.
     with st.container(key="metric_cards"):
         for card in cards:
             render_metric_card(**card)
@@ -158,11 +148,8 @@ def _dashboard() -> None:
     render_chat()
 
 
-# "locked": a barra lateral do design não recolhe.
 st.set_page_config(page_title="IEL Hackathon", initial_sidebar_state="locked")
 
-# O app abre no login; o dashboard também pode ser aberto direto em /dashboard.
-# A navegação nativa fica oculta: a sidebar do design só aparece no dashboard.
 LOGIN = st.Page(_login, title="Login", default=True)
 DASHBOARD = st.Page(_dashboard, title="Dashboard", url_path="dashboard")
 st.navigation([LOGIN, DASHBOARD], position="hidden").run()
