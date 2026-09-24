@@ -1,0 +1,78 @@
+/* Estilos da tabela de calor. As classes "heatmap-table..." vêm da marcação gerada em heatmap_table.py.
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+.heatmap-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heatmap-table p {
+  margin: 0;
+  line-height: normal;
+}
+
+.heatmap-table__title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #044947;
+}
+
+/* Cartão branco com a sombra "sombra" do design. */
+.heatmap-table__card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+}
+
+/* Linha: primeira coluna com largura fixa e as demais dividindo o resto igualmente. */
+.heatmap-table__row {
+  display: flex;
+  gap: 6px;
+}
+
+.heatmap-table__corner,
+.heatmap-table__row-label {
+  flex-shrink: 0;
+  width: 140px;
+}
+
+.heatmap-table__column,
+.heatmap-table__cell {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: center;
+}
+
+/* No design o cabeçalho não quebra linha; aqui quebra, para não vazar quando a tabela fica estreita.
+   O "balance" faz "Manhã 6h–9h" quebrar no espaço, e não depois do traço. */
+.heatmap-table__corner,
+.heatmap-table__column {
+  text-wrap: balance;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #707070;
+}
+
+.heatmap-table__row-label {
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #044947;
+}
+
+/* O fundo de cada célula vem da marcação, conforme o valor. */
+.heatmap-table__cell {
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #1f1f1d;
+  white-space: nowrap;
+}

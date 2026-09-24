@@ -1,11 +1,12 @@
+import math
+import re
 from typing import get_args
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from iel_hackathon.components import data_card
+from iel_hackathon.components import data_card, heatmap_table, metric_card
 from iel_hackathon.components import filter as filter_ui
-from iel_hackathon.components import metric_card
 
 OPTIONS = ["Sudeste e Centro-oeste", "Sul", "Nordeste", "Norte"]
 
@@ -66,7 +67,9 @@ def test_metric_card_escapes_html():
     assert "a &amp; b" in markup
 
 
-@pytest.mark.parametrize("css_path", [filter_ui._CSS_PATH, metric_card._CSS_PATH, data_card._CSS_PATH])
+@pytest.mark.parametrize(
+    "css_path", [filter_ui._CSS_PATH, metric_card._CSS_PATH, data_card._CSS_PATH, heatmap_table._CSS_PATH]
+)
 def test_css_has_no_less_than_sign(css_path):
     # O sanitizador do frontend do Streamlit descarta o <style> inteiro se o CSS contiver "<".
     assert "<" not in css_path.read_text(encoding="utf-8")
@@ -168,3 +171,129 @@ def test_data_card_icons_exist(icon):
 
     assert icon_path.is_file()
     assert icon_path.stat().st_size > 0
+
+
+HEATMAP_ROWS = ["SE/CO", "S", "NE", "N"]
+HEATMAP_COLUMNS = ["Madrugada 0h–6h", "Manhã 6h–9h", "Sol 9h–16h", "Rampa 16h–19h", "Noite 19h–24h"]
+GREEN, YELLOW, ORANGE, RED = heatmap_table.BAND_COLORS
+_HEATMAP_CELL = re.compile(r'<p class="heatmap-table__cell" style="background-color: ([^"]*)">([^<]*)</p>')
+
+
+def _heatmap_cells(markup: str) -> list[tuple[str, str]]:
+    """(cor, texto) de cada célula, linha por linha."""
+    return _HEATMAP_CELL.findall(markup)
+
+
+def _heatmap_markup(**props) -> str:
+    return heatmap_table._markup(**{"rows": HEATMAP_ROWS, "columns": HEATMAP_COLUMNS, "thresholds": (2, 4, 6), **props})
+
+
+def test_heatmap_table_shows_title_labels_and_headers_in_order():
+    markup = _heatmap_markup(title="MAPE por submercado e faixa horária", rows_label="Submercado")
+    texts = [
+        '<p class="heatmap-table__title">MAPE por submercado e faixa horária</p>',
+        '<p class="heatmap-table__corner">Submercado</p>',
+        *(f'<p class="heatmap-table__column">{column}</p>' for column in HEATMAP_COLUMNS),
+        *(f'<p class="heatmap-table__row-label">{row}</p>' for row in HEATMAP_ROWS),
+    ]
+
+    positions = [markup.index(text) for text in texts]
+    assert positions == sorted(positions)
+
+
+def test_heatmap_table_without_title_renders_no_title():
+    assert "heatmap-table__title" not in _heatmap_markup()
+
+
+def test_heatmap_table_without_values_matches_the_design():
+    cells = _heatmap_cells(_heatmap_markup())
+
+    assert [text for _, text in cells] == ["—"] * 20
+    assert [color for color, _ in cells] == [color for row in heatmap_table.EMPTY_COLORS for color in row]
+
+
+def test_heatmap_table_empty_colors_repeat_in_cycle_on_bigger_tables():
+    cells = _heatmap_cells(_heatmap_markup(rows=[*HEATMAP_ROWS, "Extra"], columns=[*HEATMAP_COLUMNS, "Extra"]))
+    colors = [color for color, _ in cells]
+    pattern = heatmap_table.EMPTY_COLORS
+
+    assert colors[:6] == [*pattern[0], pattern[0][0]]
+    assert colors[4 * 6 : 5 * 6] == colors[:6]
+
+
+@pytest.mark.parametrize(
+    ("value", "color"),
+    [(1, GREEN), (2, GREEN), (2.01, YELLOW), (4, YELLOW), (5, ORANGE), (6, ORANGE), (6.5, RED)],
+)
+def test_heatmap_table_value_gets_the_color_of_its_band(value, color):
+    cells = _heatmap_cells(_heatmap_markup(values={"SE/CO": {"Madrugada 0h–6h": value}}))
+
+    assert cells[0][0] == color
+
+
+@pytest.mark.parametrize(("value", "text"), [(2.13, "2,13%"), (2, "2,00%"), (2.126, "2,13%"), (12.5, "12,50%")])
+def test_heatmap_table_formats_value_as_percentage(value, text):
+    cells = _heatmap_cells(_heatmap_markup(values={"SE/CO": {"Madrugada 0h–6h": value}}))
+
+    assert cells[0][1] == text
+
+
+@pytest.mark.parametrize("values", [{"SE/CO": {"Madrugada 0h–6h": None}}, {"SE/CO": {"Madrugada 0h–6h": math.nan}}])
+def test_heatmap_table_none_and_nan_are_empty(values):
+    cells = _heatmap_cells(_heatmap_markup(values=values))
+
+    assert cells[0] == (heatmap_table.EMPTY_COLORS[0][0], "—")
+
+
+def test_heatmap_table_missing_cells_stay_empty():
+    cells = _heatmap_cells(_heatmap_markup(values={"S": {"Sol 9h–16h": 3}}))
+
+    assert cells[5 + 2] == (YELLOW, "3,00%")
+    assert [text for _, text in cells].count("—") == 19
+
+
+def test_heatmap_table_accepts_custom_bands_and_placeholder():
+    cells = _heatmap_cells(
+        _heatmap_markup(
+            rows=["A"],
+            columns=["x", "y", "z", "w"],
+            values={"A": {"x": 5, "y": 10, "z": 15}},
+            thresholds=(5, 10),
+            colors=("#000001", "#000002", "#000003"),
+            empty_colors=[["#00000f"]],
+            placeholder="n/d",
+        )
+    )
+
+    assert cells == [("#000001", "5,00%"), ("#000002", "10,00%"), ("#000003", "15,00%"), ("#00000f", "n/d")]
+
+
+@pytest.mark.parametrize(
+    ("thresholds", "colors"),
+    [
+        ((2, 4, 6), (GREEN, YELLOW, ORANGE)),
+        ((2, 4), heatmap_table.BAND_COLORS),
+        ((4, 2, 6), heatmap_table.BAND_COLORS),
+        ((2, 2, 6), heatmap_table.BAND_COLORS),
+    ],
+)
+def test_heatmap_table_rejects_invalid_bands(thresholds, colors):
+    with pytest.raises(ValueError):
+        _heatmap_markup(thresholds=thresholds, colors=colors)
+
+
+def test_heatmap_table_escapes_html():
+    markup = heatmap_table._markup(
+        title="<b>t</b>",
+        rows_label="<b>r</b>",
+        rows=["<b>l</b>"],
+        columns=["<b>c</b>"],
+        thresholds=(),
+        colors=['red"><b>x</b>'],
+        values={"<b>l</b>": {"<b>c</b>": 1}},
+    )
+
+    assert "<b>" not in markup
+    for text in ("t", "r", "l", "c", "x"):
+        assert f"&lt;b&gt;{text}&lt;/b&gt;" in markup
+    assert "red&quot;&gt;" in markup
