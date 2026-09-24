@@ -7,8 +7,10 @@ import streamlit as st
 
 from . import model
 
-TITLE = "Assistente IA"
-EMPTY_STATE = "Envie uma mensagem para começar."
+TITLE = "IA Assistente"
+EMPTY_STATE = "Envie uma mensagem para iniciar"
+# Mostrado no balão da IA até chegar o primeiro trecho da resposta.
+TYPING_INDICATOR = "...."
 INPUT_PLACEHOLDER = "Digite sua mensagem..."
 ERROR_MESSAGE = "Não foi possível obter uma resposta do modelo. Tente novamente."
 
@@ -31,7 +33,7 @@ def render_chat() -> None:
 def _chat() -> None:
     # Fragment: abrir, fechar e conversar re-executam só o chat, não a página inteira.
     # Os botões mostram só o ícone; o rótulo é ocultado pelo CSS, mas segue acessível.
-    # O ícone do botão flutuante (estrela do design) é aplicado pelo CSS.
+    # Os ícones (estrela do botão flutuante e X de fechar) são aplicados pelo CSS.
     if not st.session_state.chat_open:
         st.button(
             "Abrir chat",
@@ -48,17 +50,8 @@ def _chat() -> None:
             st.markdown(f"**{TITLE}**")
             st.space("stretch")
             st.button(
-                "Limpar conversa",
-                key="chat_clear",
-                icon=":material/delete:",
-                type="tertiary",
-                help="Limpar conversa",
-                on_click=_clear_history,
-            )
-            st.button(
                 "Fechar chat",
                 key="chat_close",
-                icon=":material/close:",
                 type="tertiary",
                 help="Fechar chat",
                 on_click=_set_open,
@@ -78,7 +71,9 @@ def _chat() -> None:
         if prompt:
             _respond(prompt, history)
         elif not history:
-            st.caption(EMPTY_STATE)
+            # A estrela acima do texto vem do CSS.
+            with st.container(key="chat_empty"):
+                st.caption(EMPTY_STATE)
 
 
 def _respond(prompt: str, history: list[model.Message]) -> None:
@@ -86,18 +81,18 @@ def _respond(prompt: str, history: list[model.Message]) -> None:
     with st.chat_message("user"):
         st.markdown(prompt)
     with st.chat_message("assistant"):
+        # O primeiro trecho da resposta (ou o erro) substitui o indicador no mesmo espaço.
+        slot = st.empty()
+        slot.markdown(TYPING_INDICATOR)
         try:
-            reply = st.write_stream(model.stream_response(history))
+            with slot:
+                reply = st.write_stream(model.stream_response(history))
         except Exception:
             _logger.exception("Falha ao gerar a resposta do modelo")
-            st.error(ERROR_MESSAGE)
+            slot.error(ERROR_MESSAGE)
             return
     history.append({"role": "assistant", "content": str(reply)})
 
 
 def _set_open(is_open: bool) -> None:
     st.session_state.chat_open = is_open
-
-
-def _clear_history() -> None:
-    st.session_state.chat_history = []

@@ -1,5 +1,7 @@
-/* Estilos do chat. As classes "st-key-..." vêm das keys usadas em ui.py (key="chat_fab" → .st-key-chat_fab).
-   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+/* Estilos do chat, conforme o design "Hackathon Proenergia" (Figma, frames 50:16 e 56:319).
+   As classes "st-key-..." vêm das keys usadas em ui.py (key="chat_fab" → .st-key-chat_fab).
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro.
+   Os ícones são servidos pelo static serving (src/iel_hackathon/static/ em app/static/). */
 
 /* Botão flutuante: fica fixo no canto inferior direito, acima do conteúdo. */
 .st-key-chat_fab {
@@ -9,8 +11,7 @@
   z-index: 999991;
 }
 
-/* Círculo branco com a estrela do design, igual em todos os estados.
-   A estrela é servida pelo static serving (src/iel_hackathon/static/). */
+/* Círculo branco com a estrela do design, igual em todos os estados. */
 .st-key-chat_fab button,
 .st-key-chat_fab button:hover,
 .st-key-chat_fab button:active,
@@ -25,7 +26,6 @@
 
 /* Botões só com ícone: o rótulo continua acessível para leitores de tela, mas fica invisível. */
 .st-key-chat_fab button [data-testid="stMarkdownContainer"],
-.st-key-chat_clear button [data-testid="stMarkdownContainer"],
 .st-key-chat_close button [data-testid="stMarkdownContainer"] {
   position: absolute;
   width: 1px;
@@ -35,20 +35,67 @@
   white-space: nowrap;
 }
 
-/* Painel lateral: sobrepõe a página pela direita, na altura toda da janela.
-   O z-index fica acima do cabeçalho do Streamlit (999990). */
+/* Painel: card flutuante no lugar do botão, acima do cabeçalho do Streamlit (z-index 999990).
+   Em telas pequenas encolhe para caber na janela. */
 .st-key-chat_panel {
   position: fixed;
-  top: 0;
-  right: 0;
+  right: 40px;
+  bottom: 40px;
   z-index: 999991;
-  width: min(420px, 100vw);
-  height: 100vh;
-  height: 100dvh;
-  padding: 1rem;
-  gap: 0.75rem;
+  width: min(490px, calc(100vw - 32px));
+  height: min(498px, calc(100dvh - 80px));
+  padding: 20px;
+  gap: 16px;
+  justify-content: space-between;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 16px;
   background-color: #ffffff;
   box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+}
+
+/* Brilho verde e ciano no rodapé do card: o grupo de elipses desfocadas do design, exportado
+   do Figma já recortado pelo card (490×245). Fica atrás do conteúdo e não recebe cliques. */
+.st-key-chat_panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: -1;
+  width: 490px;
+  height: 245px;
+  background: url("app/static/chat_glow.png") center / 100% 100% no-repeat;
+  pointer-events: none;
+}
+
+/* O Streamlit puxa o texto em markdown 16px para cima (margem negativa), o que encolhe
+   o título e os balões; aqui cada bloco de texto ocupa só a própria altura. */
+.st-key-chat_panel [data-testid="stMarkdownContainer"] {
+  margin-bottom: 0;
+}
+
+/* Cabeçalho: título e botão de fechar. */
+.st-key-chat_header [data-testid="stMarkdown"] p {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: normal;
+  color: #044947;
+}
+
+.st-key-chat_header [data-testid="stMarkdown"] strong {
+  font-weight: inherit;
+}
+
+.st-key-chat_close button,
+.st-key-chat_close button:hover,
+.st-key-chat_close button:active,
+.st-key-chat_close button:focus:not(:active) {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  background: url("app/static/icons/close.svg") center / 32px no-repeat;
 }
 
 /* A área de mensagens ocupa o espaço entre o cabeçalho e o campo de envio,
@@ -61,32 +108,94 @@
 
 .st-key-chat_messages_box {
   height: 100% !important;
+  gap: 16px;
 }
 
-/* Paleta do design aplicada ao painel (o chat ainda não tem layout próprio no Figma). */
-.st-key-chat_header [data-testid="stMarkdown"] p,
-.st-key-chat_clear button,
-.st-key-chat_close button {
+/* Estado vazio: estrela e convite centralizados na área de mensagens. */
+.st-key-chat_messages_box:has(.st-key-chat_empty) {
+  justify-content: center;
+}
+
+.st-key-chat_empty {
+  align-items: center;
+  gap: 8px;
+}
+
+.st-key-chat_empty::before {
+  content: "";
+  width: 45.0743px;
+  height: 45.0743px;
+  background: url("app/static/chat_fab_star.svg") center / 100% 100% no-repeat;
+}
+
+.st-key-chat_empty [data-testid="stCaptionContainer"] {
+  font-size: 24px;
+  line-height: normal;
+  text-align: center;
   color: #044947;
+  opacity: 1;
 }
 
-.st-key-chat_messages_box [data-testid="stCaptionContainer"] {
-  color: #9a9a94;
+/* Balões sem avatar: usuário à direita em verde claro, assistente à esquerda em cinza.
+   O canto do lado de quem fala fica reto. */
+.st-key-chat_panel [data-testid="stChatMessage"] {
+  width: fit-content;
+  max-width: 85%;
+  gap: 0;
+  padding: 12px 24px;
+  border-radius: 24px 24px 24px 0;
+  background-color: #f5f5f1;
 }
 
 .st-key-chat_panel [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-  background-color: #f9f9f5;
+  margin-left: auto;
+  border-radius: 24px 24px 0 24px;
+  background-color: #c1f3dd;
 }
 
-.st-key-chat_panel [data-testid="stChatMessageAvatarUser"] {
-  background-color: #044947;
-}
-
+.st-key-chat_panel [data-testid="stChatMessageAvatarUser"],
 .st-key-chat_panel [data-testid="stChatMessageAvatarAssistant"] {
-  background-color: #09d075;
+  display: none;
 }
 
-/* Fundo do campo de envio; o botão de enviar já usa a cor primária do tema. */
+.st-key-chat_panel [data-testid="stChatMessageContent"] p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 17.36px;
+  color: #1f1f1d;
+}
+
+/* Campo de envio em pílula com borda verde-escura e o ícone de enviar do design. */
 .st-key-chat_panel [data-testid="stChatInput"] > div {
-  background-color: #f5f5f1;
+  padding: 12px 24px;
+  border: 1px solid #044947;
+  border-radius: 9999px;
+  background-color: #ffffff;
+}
+
+.st-key-chat_panel [data-testid="stChatInputTextArea"] {
+  min-height: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 17.36px;
+  color: #1f1f1d;
+}
+
+.st-key-chat_panel [data-testid="stChatInputTextArea"]::placeholder {
+  color: #6b6b66;
+  opacity: 1;
+}
+
+.st-key-chat_panel [data-testid="stChatInputSubmitButton"],
+.st-key-chat_panel [data-testid="stChatInputSubmitButton"]:hover,
+.st-key-chat_panel [data-testid="stChatInputSubmitButton"]:disabled {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: url("app/static/icons/send.svg") center / 24px no-repeat;
+}
+
+.st-key-chat_panel [data-testid="stChatInputSubmitButton"] svg {
+  display: none;
 }

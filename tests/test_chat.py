@@ -81,16 +81,6 @@ def test_model_receives_full_history_including_new_message(at, monkeypatch):
     assert at.chat_message[3].markdown[0].value == "3 mensagens; última: segunda"
 
 
-def test_clear_button_empties_conversation(at):
-    _open(at)
-    _send(at, "Olá")
-    at.button(key="chat_clear").click().run()
-
-    assert len(at.chat_message) == 0
-    assert at.session_state.chat_history == []
-    assert ui.EMPTY_STATE in _captions(at)
-
-
 def test_close_hides_panel_and_keeps_history(at):
     _open(at)
     _send(at, "Olá")
