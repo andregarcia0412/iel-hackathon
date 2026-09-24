@@ -15,6 +15,7 @@ INPUT_PLACEHOLDER = "Digite sua mensagem..."
 ERROR_MESSAGE = "Não foi possível obter uma resposta do modelo. Tente novamente."
 
 _CSS_PATH = Path(__file__).with_name("chat.css")
+_CLOSING_CSS_PATH = Path(__file__).with_name("chat_closing.css")
 # Altura fixa exigida pelo `autoscroll`; o CSS a substitui para ocupar o espaço livre do painel.
 _MESSAGES_HEIGHT_PX = 400
 
@@ -35,6 +36,10 @@ def _chat() -> None:
     # Os botões mostram só o ícone; o rótulo é ocultado pelo CSS, mas segue acessível.
     # Os ícones (estrela do botão flutuante e X de fechar) são aplicados pelo CSS.
     if not st.session_state.chat_open:
+        # Logo depois de fechar, o botão entra com o painel encolhendo até a estrela. O estilo vale
+        # só para esta execução; nas seguintes ele sai e a animação não se repete.
+        if st.session_state.pop("chat_closing", False):
+            st.html(_CLOSING_CSS_PATH)
         st.button(
             "Abrir chat",
             key="chat_fab",
@@ -96,3 +101,4 @@ def _respond(prompt: str, history: list[model.Message]) -> None:
 
 def _set_open(is_open: bool) -> None:
     st.session_state.chat_open = is_open
+    st.session_state.chat_closing = not is_open

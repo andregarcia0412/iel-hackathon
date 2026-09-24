@@ -29,6 +29,10 @@ def _button_keys(at: AppTest) -> list[str]:
     return [button.key for button in at.button]
 
 
+def _closing_style_injected(at: AppTest) -> bool:
+    return any("Fechamento do chat" in element.proto.body for element in at.get("html"))
+
+
 def _captions(at: AppTest) -> list[str]:
     return [caption.value for caption in at.caption]
 
@@ -94,6 +98,19 @@ def test_close_hides_panel_and_keeps_history(at):
     assert len(at.chat_message) == 2
 
 
+def test_closing_animation_runs_only_right_after_closing(at):
+    assert not _closing_style_injected(at)
+
+    _open(at)
+    assert not _closing_style_injected(at)
+
+    at.button(key="chat_close").click().run()
+    assert _closing_style_injected(at)
+
+    at.run()
+    assert not _closing_style_injected(at)
+
+
 def test_model_error_shows_message_and_keeps_only_user_turn(at, monkeypatch):
     def failing_stream(messages: list[model.Message]) -> Iterator[str]:
         raise ConnectionError("ollama fora do ar")
@@ -108,6 +125,7 @@ def test_model_error_shows_message_and_keeps_only_user_turn(at, monkeypatch):
     assert at.session_state.chat_history == [{"role": "user", "content": "Olá"}]
 
 
-def test_css_has_no_less_than_sign():
+@pytest.mark.parametrize("css_path", [ui._CSS_PATH, ui._CLOSING_CSS_PATH])
+def test_css_has_no_less_than_sign(css_path):
     # O sanitizador do frontend do Streamlit descarta o <style> inteiro se o CSS contiver "<".
-    assert "<" not in ui._CSS_PATH.read_text(encoding="utf-8")
+    assert "<" not in css_path.read_text(encoding="utf-8")

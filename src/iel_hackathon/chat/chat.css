@@ -68,6 +68,73 @@
   pointer-events: none;
 }
 
+/* Abertura: o círculo da estrela cresce a partir do canto inferior direito até virar o painel.
+   A estrela gira e some enquanto o conteúdo aparece. Roda só quando o painel é montado, ou seja,
+   ao abrir; enviar mensagens não remonta o painel. O inverso, ao fechar, fica em chat_closing.css. */
+.st-key-chat_panel {
+  animation: chat-panel-open 0.4s cubic-bezier(0.2, 0, 0, 1) backwards;
+}
+
+.st-key-chat_panel > *,
+.st-key-chat_panel::before {
+  animation: chat-content-in 0.4s ease-out backwards;
+}
+
+/* A estrela do botão flutuante, no mesmo lugar em que estava (centro do círculo de 80px). */
+.st-key-chat_panel::after {
+  content: "";
+  position: absolute;
+  right: 17.46285px;
+  bottom: 17.46285px;
+  z-index: 1;
+  width: 45.0743px;
+  height: 45.0743px;
+  background: url("app/static/chat_fab_star.svg") center / 100% 100% no-repeat;
+  opacity: 0;
+  pointer-events: none;
+  animation: chat-star-out 0.28s ease-in;
+}
+
+/* O recorte final passa da borda para não cortar a sombra; o raio de 56px acompanha os 16px do card. */
+@keyframes chat-panel-open {
+  from {
+    clip-path: inset(calc(100% - 80px) 0 0 calc(100% - 80px) round 40px);
+  }
+  to {
+    clip-path: inset(-40px round 56px);
+  }
+}
+
+@keyframes chat-content-in {
+  0%,
+  45% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes chat-star-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-key-chat_panel,
+  .st-key-chat_panel > *,
+  .st-key-chat_panel::before,
+  .st-key-chat_panel::after {
+    animation: none;
+  }
+}
+
 /* O Streamlit puxa o texto em markdown 16px para cima (margem negativa), o que encolhe
    o título e os balões; aqui cada bloco de texto ocupa só a própria altura. */
 .st-key-chat_panel [data-testid="stMarkdownContainer"] {
