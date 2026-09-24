@@ -1,7 +1,15 @@
 from types import SimpleNamespace
 
-from iel_hackathon.chat import model, prompts
+import pytest
+
+from iel_hackathon.chat import config, model, prompts
 from iel_hackathon.components import DataRow, DataValue
+
+
+@pytest.fixture(autouse=True)
+def _no_file_secrets(monkeypatch):
+    """Ignora o .streamlit/secrets.toml local: estes testes dependem só das variáveis de ambiente."""
+    monkeypatch.setattr(config, "_secret", lambda name: None)
 
 
 def _sample_dashboard_data() -> dict:
@@ -117,6 +125,16 @@ def test_in_scope_question_calls_ollama_with_system_prompt_and_history(monkeypat
     assert captured["messages"][0]["role"] == "system"
     assert "SNAPSHOT" in captured["messages"][0]["content"]
     assert captured["messages"][1] == {"role": "user", "content": "o que é MAPE?"}
+
+
+def test_setting_prefers_streamlit_secrets_over_env(monkeypatch):
+    monkeypatch.setenv("OLLAMA_MODEL", "modelo-do-env")
+    monkeypatch.setattr(config, "_secret", lambda name: "modelo-dos-secrets")
+
+    assert config._setting("OLLAMA_MODEL") == "modelo-dos-secrets"
+
+    monkeypatch.setattr(config, "_secret", lambda name: None)
+    assert config._setting("OLLAMA_MODEL") == "modelo-do-env"
 
 
 def test_is_configured_depends_on_api_key(monkeypatch):
