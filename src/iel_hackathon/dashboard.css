@@ -1,0 +1,128 @@
+/* Layout do dashboard: o conteúdo ocupa a janela inteira, na largura e na altura.
+   As classes "st-key-..." vêm das keys dos containers em main.py (key="load_section" → .st-key-load_section).
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro.
+
+   Altura: a página tem pelo menos a altura da janela. A sobra vai para a seção do gráfico e para a tabela MAPE,
+   que crescem por igual; quando a janela é menor que o conteúdo, a página rola.
+   Largura: acima de 960px de conteúdo, 4 cards de métrica e gráfico ao lado dos dados; abaixo, os cards
+   ficam 2 por linha e o gráfico e os dados empilham; abaixo de 520px, 1 card por linha. */
+
+/* O design não tem o cabeçalho do Streamlit (Deploy e menu). */
+[data-testid="stHeader"] {
+  display: none;
+}
+
+/* Sem largura máxima; 16px de margem, como a da sidebar. */
+[data-testid="stMainBlockContainer"] {
+  container: dashboard / inline-size;
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  min-height: 100dvh;
+  padding: 16px;
+}
+
+[data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] {
+  flex: 1 0 auto;
+  gap: 16px;
+}
+
+/* O chat (botão e painel) é fixo na janela; o wrapper vazio dele sairia com mais 16px de gap no fim da página. */
+[data-testid="stLayoutWrapper"]:has(.st-key-chat_fab, .st-key-chat_panel) {
+  position: absolute;
+}
+
+/* Cards de métrica: mesma largura e mesma altura em cada linha. */
+.st-key-metric_cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.st-key-metric_cards [data-testid="stHtml"] {
+  height: 100%;
+}
+
+/* Seções que absorvem a altura livre da janela. O wrapper é o item do bloco principal. */
+[data-testid="stLayoutWrapper"]:has(> .st-key-load_section),
+[data-testid="stLayoutWrapper"]:has(> .st-key-mape_section) {
+  flex: 1 1 auto;
+}
+
+.st-key-load_section,
+.st-key-mape_section {
+  height: 100%;
+}
+
+/* Seção do gráfico: título com 8px até a linha do gráfico, que ocupa o resto da altura. */
+.st-key-load_section {
+  gap: 8px;
+}
+
+[data-testid="stLayoutWrapper"]:has(> .st-key-load_row) {
+  flex: 1 1 auto;
+}
+
+.st-key-load_row {
+  height: 100%;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* Proporção do design entre o gráfico (885px) e o card de dados (370px). */
+[data-testid="stLayoutWrapper"]:has(> .st-key-load_chart_column) {
+  flex: 885 1 0;
+  min-width: 0;
+}
+
+[data-testid="stLayoutWrapper"]:has(> .st-key-load_data_column) {
+  flex: 370 1 0;
+  min-width: 280px;
+}
+
+/* Do container de cada seção até o card, cada nível ocupa a altura toda. */
+.st-key-load_chart_column,
+.st-key-load_data_column,
+.st-key-mape_section {
+  height: 100%;
+}
+
+.st-key-load_chart_column > [data-testid="stElementContainer"],
+.st-key-load_data_column > [data-testid="stElementContainer"],
+.st-key-mape_section > [data-testid="stElementContainer"] {
+  flex: 1 1 auto;
+}
+
+.st-key-load_chart_column [data-testid="stHtml"],
+.st-key-load_data_column [data-testid="stHtml"],
+.st-key-mape_section [data-testid="stHtml"] {
+  height: 100%;
+}
+
+/* Tela estreita: gráfico e dados empilham e cada seção fica com a altura do próprio conteúdo. */
+@container dashboard (max-width: 959px) {
+  .st-key-metric_cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .st-key-load_row {
+    flex-direction: column;
+  }
+
+  [data-testid="stLayoutWrapper"]:has(> .st-key-load_chart_column),
+  [data-testid="stLayoutWrapper"]:has(> .st-key-load_data_column) {
+    flex: 0 0 auto;
+    min-width: 0;
+  }
+
+  [data-testid="stLayoutWrapper"]:has(> .st-key-load_section),
+  [data-testid="stLayoutWrapper"]:has(> .st-key-mape_section) {
+    flex: 0 0 auto;
+  }
+}
+
+@container dashboard (max-width: 519px) {
+  .st-key-metric_cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

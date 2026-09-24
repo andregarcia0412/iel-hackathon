@@ -1,8 +1,9 @@
 /* Estilos do card de dados. As classes "data-card..." vêm da marcação gerada em data_card.py.
    Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
 
-/* Cartão branco com a sombra "sombra" do design. */
+/* Cartão branco com a sombra "sombra" do design. Ocupa a altura do container (a do gráfico ao lado). */
 .data-card {
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -53,9 +54,11 @@
   flex-shrink: 0;
 }
 
+/* Em cards estreitos, uma palavra que não cabe, como "(feriado/emenda)", quebra em vez de invadir o valor. */
 .data-card__label {
   flex: 1 1 0;
   min-width: 0;
+  overflow-wrap: break-word;
   font-size: 13px;
   font-weight: 400;
   color: #6b6b66;
@@ -73,4 +76,10 @@
   font-size: 12px;
   font-weight: 400;
   color: #9a9a94;
+}
+
+/* Quando o card é mais alto que o conteúdo, a sobra fica acima do rodapé.
+   O seletor é mais específico que o ".data-card p", que zera as margens. */
+.data-card .data-card__footer {
+  margin-top: auto;
 }

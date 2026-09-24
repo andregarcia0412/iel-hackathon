@@ -5,6 +5,7 @@ import math
 from collections.abc import Sequence
 from html import escape
 from pathlib import Path
+from typing import Literal
 
 import streamlit as st
 
@@ -74,7 +75,7 @@ def _markup(
     return (
         '<div class="load-chart">'
         f"{_legend()}"
-        "<div>"
+        '<div class="load-chart__chart">'
         '<div class="load-chart__body">'
         f'<div class="load-chart__y-axis">{y_labels}</div>'
         f'<div class="load-chart__plot">{plot}</div>'
@@ -151,13 +152,14 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
             f'<line x1="{_x(valley)}" y1="{_ANNOTATION_Y}" x2="{_x(valley)}" y2="{y(net[valley]):.2f}" '
             'stroke="#9A9A94" stroke-width="0.957" stroke-dasharray="3.83 3.83" vector-effect="non-scaling-stroke"/>'
         )
-        annotations.append(_annotation("Vale da carga líquida", valley))
+        annotations.append(_annotation("Vale da carga líquida", valley, align="center"))
     ramp_start, ramp_end = ramp
     ramp_line = (
         f'<line x1="{_x(ramp_start)}" y1="{_ANNOTATION_Y}" x2="{_x(ramp_end)}" y2="{_ANNOTATION_Y}" '
         'stroke="#9A9A94" stroke-width="1.439" vector-effect="non-scaling-stroke"/>'
     )
-    annotations.append(_annotation(f"Rampa {ramp_start}h–{ramp_end}h", (ramp_start + ramp_end) / 2))
+    # Como no design, o texto da rampa começa junto do traço, e não no meio dele.
+    annotations.append(_annotation(f"Rampa {ramp_start}h–{ramp_end}h", ramp_start, align="start"))
 
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {_x(_HOURS)} {_HEIGHT}" preserveAspectRatio="none">'
@@ -173,8 +175,12 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
     return image + "".join(annotations)
 
 
-def _annotation(text: str, hour: float) -> str:
-    return f'<p class="load-chart__annotation" style="left: {_percent(hour / _HOURS)}">{escape(text)}</p>'
+def _annotation(text: str, hour: float, *, align: Literal["center", "start"]) -> str:
+    """Texto acima do gráfico, na hora `hour`: centralizado nela ou começando nela."""
+    return (
+        f'<p class="load-chart__annotation load-chart__annotation--{align}" '
+        f'style="left: {_percent(hour / _HOURS)}">{escape(text)}</p>'
+    )
 
 
 def _valley(net: Sequence[float | None], solar_window: tuple[int, int]) -> int | None:

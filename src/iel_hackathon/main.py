@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import streamlit as st
 
 from iel_hackathon.chat import render_chat
@@ -19,6 +21,9 @@ from iel_hackathon.sidebar import render_sidebar
 # Opções dos filtros → código do submercado e horizonte (em dias) nas previsões do modelo.
 SUBMERCADOS = {"Sudeste e Centro-oeste": "SECO", "Sul": "S", "Nordeste": "NE", "Norte": "N"}
 PERIODOS = {"Próximo dia": 1, "Próximos 7 dias": 7}
+
+# Layout da página: ocupa a janela inteira e reorganiza os cards em telas estreitas.
+_CSS_PATH = Path(__file__).with_name("dashboard.css")
 
 # Página de teste dos componentes, com os textos de exemplo do design.
 CARDS = [
@@ -80,26 +85,29 @@ def _login() -> None:
 
 
 def _dashboard() -> None:
+    st.html(_CSS_PATH)
     render_sidebar()
 
     with filter_bar():
         submercado = render_filter("Submercado", list(SUBMERCADOS), key="filtro_submercado")
         periodo = render_filter("Período", list(PERIODOS), key="filtro_periodo")
 
-    for column, card in zip(st.columns(len(CARDS), gap=12), CARDS):
-        with column:
+    # As keys dos containers são usadas pelo dashboard.css para distribuir a largura e a altura da janela.
+    with st.container(key="metric_cards"):
+        for card in CARDS:
             render_metric_card(**card)
 
-    render_section_title("Previsão de Cargas")
-    # Larguras do gráfico e do card de dados no design.
-    chart_column, data_column = st.columns([885, 370], gap=16)
-    with chart_column:
-        forecast = load_day_forecast(SUBMERCADOS[submercado], PERIODOS[periodo])
-        render_load_chart(net=forecast.net, gross=forecast.gross)
-    with data_column:
-        render_data_card(**PERIOD_DATA)
+    with st.container(key="load_section"):
+        render_section_title("Previsão de Cargas")
+        with st.container(key="load_row", horizontal=True):
+            with st.container(key="load_chart_column"):
+                forecast = load_day_forecast(SUBMERCADOS[submercado], PERIODOS[periodo])
+                render_load_chart(net=forecast.net, gross=forecast.gross)
+            with st.container(key="load_data_column"):
+                render_data_card(**PERIOD_DATA)
 
-    render_heatmap_table(**MAPE_TABLE)
+    with st.container(key="mape_section"):
+        render_heatmap_table(**MAPE_TABLE)
 
     render_chat()
 

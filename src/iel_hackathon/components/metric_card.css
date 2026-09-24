@@ -1,8 +1,10 @@
 /* Estilos do card de métrica. As classes "metric-card..." vêm da marcação gerada em metric_card.py.
    Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
 
-/* Cartão branco com a sombra "sombra" do design. */
+/* Cartão branco com a sombra "sombra" do design. Ocupa a altura do container, para ficar
+   igual aos vizinhos da mesma linha. */
 .metric-card {
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 6px;

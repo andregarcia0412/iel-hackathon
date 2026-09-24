@@ -1,11 +1,13 @@
 import base64
 import math
 import re
+from pathlib import Path
 from typing import get_args
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
+import iel_hackathon
 from iel_hackathon.components import data_card, heatmap_table, load_chart, metric_card, section_title
 from iel_hackathon.components import filter as filter_ui
 
@@ -77,6 +79,8 @@ def test_metric_card_escapes_html():
         heatmap_table._CSS_PATH,
         load_chart._CSS_PATH,
         section_title._CSS_PATH,
+        # Layout do dashboard, injetado pelo main.py (que não dá para importar sem rodar o app).
+        Path(iel_hackathon.__file__).with_name("dashboard.css"),
     ],
 )
 def test_css_has_no_less_than_sign(css_path):
@@ -340,9 +344,21 @@ def test_load_chart_marks_valley_at_lowest_net_load_in_solar_window():
     markup = _load_chart_markup()
 
     # 12h = 50% da largura; a linha tracejada do vale sai de x = 12h no viewBox.
-    assert '<p class="load-chart__annotation" style="left: 50%">Vale da carga líquida</p>' in markup
+    assert (
+        '<p class="load-chart__annotation load-chart__annotation--center" style="left: 50%">'
+        "Vale da carga líquida</p>"
+    ) in markup
     assert '<line x1="120" y1="38"' in _load_chart_svg(markup)
-    assert "Rampa 16h–19h" in markup
+
+
+def test_load_chart_ramp_text_starts_at_ramp_start():
+    markup = _load_chart_markup(ramp=(16, 19))
+
+    # 16h = 66,67% da largura: o texto começa no início do traço da rampa, como no design.
+    assert (
+        '<p class="load-chart__annotation load-chart__annotation--start" style="left: 66.67%">'
+        "Rampa 16h–19h</p>"
+    ) in markup
 
 
 def test_load_chart_missing_hour_breaks_the_lines():

@@ -1,13 +1,15 @@
 /* Estilos do gráfico de cargas. As classes "load-chart..." vêm da marcação gerada em load_chart.py.
    Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
 
-/* Cartão branco com a sombra "sombra" do design: legenda em cima e gráfico embaixo, na altura do design. */
+/* Cartão branco com a sombra "sombra" do design: legenda em cima e gráfico embaixo.
+   Ocupa a altura do container; a sobra vai para a área do gráfico. */
 .load-chart {
+  container: load-chart / inline-size;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 32px;
-  min-height: 386px;
+  height: 100%;
   padding: 16px 24px;
   border-radius: 16px;
   background-color: #ffffff;
@@ -27,11 +29,11 @@
   padding-left: 43px;
 }
 
+/* Em cards estreitos, o texto do item quebra linha ao lado da amostra. */
 .load-chart__legend-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  white-space: nowrap;
 }
 
 /* O tamanho vai no próprio texto: o Streamlit define o tamanho de todo parágrafo. */
@@ -61,10 +63,20 @@
   opacity: 0.5;
 }
 
-/* Eixo Y à esquerda (rótulos + linha vertical) e a área do gráfico, com a altura do design. */
+/* Gráfico (área + eixo X): fica com a altura que sobra no card depois da legenda. */
+.load-chart__chart {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+/* Eixo Y à esquerda (rótulos + linha vertical) e a área do gráfico. Parte da altura do design
+   e cresce ou encolhe com o card, até um mínimo legível. */
 .load-chart__body {
   display: flex;
+  flex: 1 1 auto;
   height: 254px;
+  min-height: 180px;
 }
 
 .load-chart__y-axis {
@@ -84,7 +96,9 @@
   white-space: nowrap;
 }
 
+/* Container para as anotações se ajustarem à largura do gráfico. */
 .load-chart__plot {
+  container: load-chart-plot / inline-size;
   position: relative;
   flex: 1 1 0;
   min-width: 0;
@@ -98,14 +112,50 @@
   height: 100%;
 }
 
-/* Textos do vale e da rampa, centralizados na hora que marcam. */
+/* Textos do vale e da rampa, 4px acima do traço da rampa, que fica a 38/254 da altura do gráfico.
+   Presos pela base: se quebrarem linha, crescem para cima. */
 .load-chart__annotation {
   position: absolute;
-  top: 17px;
-  transform: translateX(-50%);
+  bottom: calc(85.04% + 4px);
   font-size: 11.5px;
   color: #6b6b66;
   white-space: nowrap;
+}
+
+/* O texto do vale fica centralizado na linha; o da rampa começa 8px depois do início do traço. */
+.load-chart__annotation--center {
+  transform: translateX(-50%);
+}
+
+.load-chart__annotation--start {
+  margin-left: 8px;
+}
+
+/* Em gráficos estreitos, o texto do vale termina na linha, para não encostar no da rampa. */
+@container load-chart-plot (max-width: 599px) {
+  .load-chart__annotation--center {
+    transform: translateX(calc(-100% - 4px));
+  }
+}
+
+/* Gráficos muito estreitos (celular): os textos quebram linha e o da rampa encosta na direita do gráfico. */
+@container load-chart-plot (max-width: 239px) {
+  .load-chart__annotation {
+    max-width: 64px;
+    white-space: normal;
+  }
+
+  .load-chart__annotation--center {
+    text-align: right;
+  }
+
+  /* O left vem da marcação (hora da rampa), por isso o !important. */
+  .load-chart__annotation--start {
+    left: auto !important;
+    right: 0;
+    margin-left: 0;
+    text-align: right;
+  }
 }
 
 /* Eixo X: linha e rótulos de 0h a 24h, distribuídos na largura do gráfico. */
@@ -124,4 +174,17 @@
 .load-chart__x-labels p {
   font-size: 12px;
   color: #9a9a94;
+}
+
+/* Cards estreitos: menos rótulos no eixo X, para não encavalarem (de 4 em 4 horas e, no celular, de 8 em 8). */
+@container load-chart (max-width: 450px) {
+  .load-chart__x-labels p:nth-child(even) {
+    display: none;
+  }
+}
+
+@container load-chart (max-width: 270px) {
+  .load-chart__x-labels p:not(:nth-child(4n + 1)) {
+    display: none;
+  }
 }
