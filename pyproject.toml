@@ -24,3 +24,7 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+
+# O diretório hackathon_proenergia/ é um projeto à parte (requirements próprios).
+[tool.pytest.ini_options]
+testpaths = ["tests"]

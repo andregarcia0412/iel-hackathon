@@ -33,10 +33,10 @@ _OUT_OF_SCOPE_PATTERN = re.compile(
 # o usuário entender a ferramenta: exemplificam valores do dashboard ou o motivo
 # de um gráfico. Ao atualizar o dashboard, revise esta lista.
 SUGGESTIONS = [
-    "Por que o MAPE costuma ser maior na faixa da rampa (16h–19h)?",
-    "Qual a diferença entre as abordagens Direta e Decomposta?",
-    "O que significa o card 'Valor estimado de economia'?",
     "Como ler o heatmap de MAPE por submercado?",
+    "Por que a carga líquida cai no horário de sol no gráfico de previsão?",
+    "Qual a diferença entre as abordagens Direta e Decomposta?",
+    "O que os dados do período explicam sobre a previsão?",
 ]
 
 _SYSTEM_PROMPT = """\
@@ -45,10 +45,23 @@ projeto IEL Hackathon (Casa dos Ventos), que compara duas abordagens de \
 previsão de carga líquida — Direta e Decomposta (carga bruta − MMGD) — por \
 submercado brasileiro (SE/CO, S, NE, N).
 
+## O que o dashboard mostra
+
+- Cards de métricas do mês: erro de previsão evitado (em energia, GWh, e em \
+valor, R$) e o MAPE de cada abordagem (Direta e Decomposta).
+- Gráfico "Previsão de Cargas": carga líquida prevista (abordagem final) e \
+carga bruta, hora a hora, em MW. A diferença entre as duas curvas é a geração \
+solar distribuída (MMGD) — por isso a carga líquida cai no horário de sol.
+- Card "Dados do período": meteorologia (irradiância, temperatura), potência \
+de MMGD instalada e calendário (feriado/emenda) usados pelo modelo no dia \
+previsto, às 13h.
+- Heatmap de MAPE: erro médio percentual da previsão final por submercado e \
+faixa horária (verde até 2%, amarelo até 4%, laranja até 6%, vermelho acima).
+
 ## Escopo — REGRA MAIS IMPORTANTE
 
-- Responda APENAS perguntas sobre este dashboard: os gráficos e tabelas \
-exibidos, os valores dos cards, a tabela de calor de MAPE, os dados do \
+- Responda APENAS perguntas sobre este dashboard: o gráfico de previsão de \
+cargas, os valores dos cards, a tabela de calor de MAPE, os dados do \
 período, os filtros de submercado/período e conceitos diretamente ligados a \
 eles (carga líquida, MMGD, MAPE, rampas de consumo, submercados).
 - Se a pergunta NÃO for sobre este dashboard, responda SOMENTE o texto abaixo, \
@@ -129,20 +142,45 @@ def build_dashboard_snapshot(data: Mapping[str, Any] | None) -> str:
         columns = ", ".join(mape.get("columns", ()))
         rows = ", ".join(mape.get("rows", ()))
         thresholds = mape.get("thresholds")
-        lines.append(f"Tabela \"{mape.get('title')}\": linhas={rows}; colunas={columns}.")
+        lines.append(f"Tabela \"{mape.get('title')}\": submercados={rows}; faixas={columns}.")
         if thresholds:
             bom, atencao, alto = thresholds
             lines.append(
                 f"  Escala de cores: verde até {bom}% (bom), amarelo até {atencao}%, "
                 f"laranja até {alto}%, vermelho acima de {alto}% de MAPE."
             )
-        values = mape.get("values")
+        values = mape.get("values") or {}
         if values:
-            lines.append(f"  Valores: {values}")
+            lines.append("  MAPE em cada submercado e faixa horária:")
+            for row_label, by_band in values.items():
+                bands = "; ".join(f"{band} {_percent(value)}" for band, value in by_band.items())
+                lines.append(f"  {row_label}: {bands}")
         else:
             lines.append("  Valores da tabela ainda não carregados.")
 
+    chart = data.get("load_chart")
+    if chart:
+        net = _as_sequence(chart.get("net"))
+        gross = _as_sequence(chart.get("gross"))
+        lines.append(
+            f"Gráfico \"Previsão de Cargas\" (dia {chart.get('date')}): carga líquida prevista "
+            "(abordagem final) e carga bruta, em MW, hora a hora:"
+        )
+        for hour in range(len(net)):
+            bruta = gross[hour] if hour < len(gross) else None
+            lines.append(f"  {hour}h: líquida {_mw(net[hour])}, bruta {_mw(bruta)}")
+
     return "\n".join(lines) if lines else "Nenhum dado do dashboard foi carregado ainda."
+
+
+def _percent(value: float) -> str:
+    return f"{value:.1f}%".replace(".", ",")
+
+
+def _mw(value: float | None) -> str:
+    if value is None:
+        return "— MW"
+    return f"{value:,.0f} MW".replace(",", ".")
 
 
 def _as_sequence(value: Any) -> Sequence[Any]:

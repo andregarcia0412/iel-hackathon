@@ -1,11 +1,14 @@
+import base64
 import math
 import re
+from pathlib import Path
 from typing import get_args
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
-from iel_hackathon.components import data_card, heatmap_table, metric_card
+import iel_hackathon
+from iel_hackathon.components import data_card, heatmap_table, load_chart, metric_card, section_title
 from iel_hackathon.components import filter as filter_ui
 
 OPTIONS = ["Sudeste e Centro-oeste", "Sul", "Nordeste", "Norte"]
@@ -68,7 +71,17 @@ def test_metric_card_escapes_html():
 
 
 @pytest.mark.parametrize(
-    "css_path", [filter_ui._CSS_PATH, metric_card._CSS_PATH, data_card._CSS_PATH, heatmap_table._CSS_PATH]
+    "css_path",
+    [
+        filter_ui._CSS_PATH,
+        metric_card._CSS_PATH,
+        data_card._CSS_PATH,
+        heatmap_table._CSS_PATH,
+        load_chart._CSS_PATH,
+        section_title._CSS_PATH,
+        # Layout do dashboard, injetado pelo main.py (que não dá para importar sem rodar o app).
+        Path(iel_hackathon.__file__).with_name("dashboard.css"),
+    ],
 )
 def test_css_has_no_less_than_sign(css_path):
     # O sanitizador do frontend do Streamlit descarta o <style> inteiro se o CSS contiver "<".
@@ -297,3 +310,137 @@ def test_heatmap_table_escapes_html():
     for text in ("t", "r", "l", "c", "x"):
         assert f"&lt;b&gt;{text}&lt;/b&gt;" in markup
     assert "red&quot;&gt;" in markup
+
+
+# Carga líquida e bruta de um dia, em MW: o mínimo da líquida na faixa solar (8h–16h) é às 12h.
+NET = [45_000.0] * 8 + [42_000.0, 41_000.0, 40_000.0, 39_000.0, 37_000.0, 38_000.0, 41_000.0, 44_000.0, 46_000.0] + [50_000.0] * 7
+GROSS = [value + (10_000.0 if 8 <= hour <= 16 else 100.0) for hour, value in enumerate(NET)]
+
+
+def _load_chart_markup(**kwargs) -> str:
+    return load_chart._markup(**{"net": NET, "gross": GROSS, **kwargs})
+
+
+def _load_chart_svg(markup: str) -> str:
+    """O SVG do gráfico, que vai embutido em base64 no src da imagem."""
+    (encoded,) = re.findall(r'src="data:image/svg\+xml;base64,([^"]+)"', markup)
+    return base64.b64decode(encoded).decode()
+
+
+def test_load_chart_shows_legend_and_axis_labels():
+    markup = _load_chart_markup()
+
+    for text in (
+        "Carga líquida (o que a rede entrega)",
+        "Carga bruta (energia total consumida)",
+        "MMGD (energia gerada pelos painéis solares)",
+    ):
+        assert f"<p>{text}</p>" in markup
+    assert re.findall(r"<p>(\d+h)</p>", markup) == [f"{hour}h" for hour in range(0, 25, 2)]
+    assert len(re.findall(r'class="load-chart__y-label"', markup)) == 8
+
+
+def test_load_chart_marks_valley_at_lowest_net_load_in_solar_window():
+    markup = _load_chart_markup()
+
+    # 12h = 50% da largura; a linha tracejada do vale sai de x = 12h no viewBox.
+    assert (
+        '<p class="load-chart__annotation load-chart__annotation--center" style="left: 50%">'
+        "Vale da carga líquida</p>"
+    ) in markup
+    assert '<line x1="120" y1="38"' in _load_chart_svg(markup)
+
+
+def test_load_chart_ramp_text_starts_at_ramp_start():
+    markup = _load_chart_markup(ramp=(16, 19))
+
+    # 16h = 66,67% da largura: o texto começa no início do traço da rampa, como no design.
+    assert (
+        '<p class="load-chart__annotation load-chart__annotation--start" style="left: 66.67%">'
+        "Rampa 16h–19h</p>"
+    ) in markup
+
+
+def test_load_chart_missing_hour_breaks_the_lines():
+    net = list(NET)
+    net[5] = None
+    svg = _load_chart_svg(_load_chart_markup(net=net))
+
+    net_lines = re.findall(r'<polyline points="([^"]+)"[^>]*url\(#load-chart-net\)', svg)
+    assert [len(points.split()) for points in net_lines] == [5, 18]
+    # A área da MMGD também para onde falta a líquida.
+    assert len(re.findall(r"<polygon ", svg)) == 2
+
+
+def _tooltip_values(markup: str) -> list[list[str]]:
+    """Os três valores (líquida, bruta, MMGD) do card de cada hora."""
+    zones = markup.split('class="load-chart__hover"')[1:]
+    return [re.findall(r'class="load-chart__tooltip-value">([^<]+)</p>', zone) for zone in zones]
+
+
+def test_load_chart_tooltip_shows_net_gross_and_mmgd_for_every_hour():
+    markup = _load_chart_markup()
+
+    values = _tooltip_values(markup)
+    assert len(values) == 24
+    # 12h: líquida 37 GW, bruta 47 GW, MMGD = bruta − líquida.
+    assert values[12] == ["37,00 GW", "47,00 GW", "10,00 GW"]
+    assert re.findall(r'class="load-chart__tooltip-hour">(\d+h)</p>', markup) == [f"{hour}h" for hour in range(24)]
+    for label in ("Carga líquida", "Carga bruta", "MMGD"):
+        assert markup.count(f"<p>{label}</p>") == 24
+
+
+def test_load_chart_tooltip_zones_cover_the_plot_without_overflowing():
+    markup = _load_chart_markup()
+
+    zones = re.findall(r'class="load-chart__hover" style="left: ([\d.]+)%; width: ([\d.]+)%"', markup)
+    assert zones[0] == ("0", "2.083")
+    assert zones[12] == ("47.92", "4.167")
+    left, width = map(float, zones[-1])
+    assert left + width == pytest.approx(100, abs=0.01)
+    # Até o meio do dia o card abre à direita; depois, à esquerda.
+    sides = re.findall(r"load-chart__tooltip--(right|left)", markup)
+    assert sides == ["right"] * 12 + ["left"] * 12
+
+
+def test_load_chart_tooltip_missing_value_shows_placeholder():
+    net = list(NET)
+    net[5] = None
+    markup = _load_chart_markup(net=net)
+
+    assert _tooltip_values(markup)[5] == ["-- GW", f"{GROSS[5] / 1000:.2f}".replace(".", ",") + " GW", "-- GW"]
+    zone = markup.split('class="load-chart__hover"')[6]
+    assert "load-chart__dot--net" not in zone
+    assert "load-chart__dot--gross" in zone
+
+
+def test_load_chart_without_data_shows_placeholder_axis():
+    markup = _load_chart_markup(net=[None] * 24, gross=[None] * 24)
+
+    assert markup.count(">--GW</p>") == 8
+    assert "<img" not in markup
+    assert "load-chart__hover" not in markup
+
+
+def test_load_chart_rejects_wrong_number_of_hours():
+    with pytest.raises(ValueError):
+        _load_chart_markup(net=NET[:23])
+
+
+@pytest.mark.parametrize(("minimum", "maximum"), [(36.79, 55.2), (7.51, 16.97), (7.16, 11.24), (0.2, 0.9), (40, 40)])
+def test_load_chart_y_scale_fits_data_below_annotations(minimum, maximum):
+    low, step = load_chart._y_scale(minimum, maximum)
+
+    assert low <= minimum
+    assert low + 7 * step * (1 - load_chart._HEADROOM) >= maximum
+    mantissa = step / 10 ** math.floor(math.log10(step))
+    assert any(math.isclose(mantissa, nice) for nice in load_chart._NICE_STEPS)
+
+
+@pytest.mark.parametrize(("value", "text"), [(38, "38GW"), (7.5, "7,5GW"), (12.25, "12,25GW"), (0.0, "0GW")])
+def test_load_chart_formats_gw_in_pt_br(value, text):
+    assert load_chart._format_gw(value) == text
+
+
+def test_section_title_escapes_html():
+    assert section_title._markup("<b>Previsão</b>") == '<p class="section-title">&lt;b&gt;Previsão&lt;/b&gt;</p>'

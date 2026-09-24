@@ -12,6 +12,18 @@
   border-radius: 16px;
 }
 
+/* Em telas estreitas o Streamlit recolhe a sidebar (aria-expanded="false" e translate para fora da tela);
+   no design ela fica sempre aberta. */
+[data-testid="stSidebar"][aria-expanded="false"] {
+  transform: none;
+}
+
+/* Nessas telas o Streamlit também tira o conteúdo do fluxo (position: absolute) para a sidebar abrir por cima;
+   aqui o conteúdo continua ao lado dela. */
+[data-testid="stAppViewContainer"] [data-testid="stMain"] {
+  position: relative;
+}
+
 /* Com a largura fixa, a alça de redimensionar não faz sentido. */
 [data-testid="stSidebarResizeHandle"] {
   display: none;

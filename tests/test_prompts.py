@@ -27,6 +27,15 @@ def _sample_dashboard_data() -> dict:
             "rows": ["SE/CO", "S"],
             "columns": ["Madrugada 0h–6h", "Rampa 16h–19h"],
             "thresholds": (2, 4, 6),
+            "values": {
+                "SE/CO": {"Madrugada 0h–6h": 1.84, "Rampa 16h–19h": 5.42},
+                "S": {"Madrugada 0h–6h": 2.76, "Rampa 16h–19h": 7.03},
+            },
+        },
+        "load_chart": {
+            "date": "31/08/2026",
+            "net": [40123.4, 38910.0, 37005.5],
+            "gross": [40200.1, 39100.2, 37300.8],
         },
     }
 
@@ -71,6 +80,11 @@ def test_snapshot_includes_filters_cards_and_tables():
     assert "Irradiância prevista: 1.2 GW" in snapshot
     assert "MAPE por submercado e faixa horária" in snapshot
     assert "verde até 2%" in snapshot
+    assert "SE/CO: Madrugada 0h–6h 1,8%" in snapshot
+    assert "S: Madrugada 0h–6h 2,8%" in snapshot
+    assert 'Gráfico "Previsão de Cargas" (dia 31/08/2026)' in snapshot
+    assert "0h: líquida 40.123 MW, bruta 40.200 MW" in snapshot
+    assert "2h: líquida 37.006 MW, bruta 37.301 MW" in snapshot
 
 
 def test_snapshot_handles_missing_data():

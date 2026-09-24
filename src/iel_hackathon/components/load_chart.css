@@ -1,0 +1,285 @@
+/* Estilos do gráfico de cargas. As classes "load-chart..." vêm da marcação gerada em load_chart.py.
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Cartão branco com a sombra "sombra" do design: legenda em cima e gráfico embaixo.
+   Ocupa a altura do container; a sobra vai para a área do gráfico. */
+.load-chart {
+  container: load-chart / inline-size;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  height: 100%;
+  padding: 16px 24px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+}
+
+.load-chart p {
+  margin: 0;
+  line-height: normal;
+}
+
+/* Legenda: alinhada ao início do gráfico, depois da coluna do eixo Y. */
+.load-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding-left: 43px;
+}
+
+/* Em cards estreitos, o texto do item quebra linha ao lado da amostra. */
+.load-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* O tamanho vai no próprio texto: o Streamlit define o tamanho de todo parágrafo. */
+.load-chart__legend-item p {
+  font-size: 12px;
+  color: #6b6b66;
+}
+
+.load-chart__swatch {
+  flex-shrink: 0;
+  width: 20px;
+  height: 3px;
+}
+
+.load-chart__swatch--net {
+  background: linear-gradient(90deg, #cae300 0%, #2bdcd1 100%);
+}
+
+/* Traço tracejado: 4px de cor e 4px de vão, como no design. */
+.load-chart__swatch--gross {
+  background: repeating-linear-gradient(90deg, #044947 0 4px, transparent 4px 8px);
+}
+
+.load-chart__swatch--mmgd {
+  height: 10px;
+  background-color: rgba(9, 208, 117, 0.25);
+  opacity: 0.5;
+}
+
+/* Gráfico (área + eixo X): fica com a altura que sobra no card depois da legenda. */
+.load-chart__chart {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+/* Eixo Y à esquerda (rótulos + linha vertical) e a área do gráfico. Parte da altura do design
+   e cresce ou encolhe com o card, até um mínimo legível. */
+.load-chart__body {
+  display: flex;
+  flex: 1 1 auto;
+  height: 254px;
+  min-height: 180px;
+}
+
+.load-chart__y-axis {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  border-right: 1px solid #e4e4e0;
+}
+
+/* O centro de cada rótulo fica na altura do valor. */
+.load-chart__y-label {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #9a9a94;
+  white-space: nowrap;
+}
+
+/* Container para as anotações se ajustarem à largura do gráfico. */
+.load-chart__plot {
+  container: load-chart-plot / inline-size;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.load-chart__svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Textos do vale e da rampa, 4px acima do traço da rampa, que fica a 38/254 da altura do gráfico.
+   Presos pela base: se quebrarem linha, crescem para cima. */
+.load-chart__annotation {
+  position: absolute;
+  bottom: calc(85.04% + 4px);
+  font-size: 11.5px;
+  color: #6b6b66;
+  white-space: nowrap;
+}
+
+/* O texto do vale fica centralizado na linha; o da rampa começa 8px depois do início do traço. */
+.load-chart__annotation--center {
+  transform: translateX(-50%);
+}
+
+.load-chart__annotation--start {
+  margin-left: 8px;
+}
+
+/* Em gráficos estreitos, o texto do vale termina na linha, para não encostar no da rampa. */
+@container load-chart-plot (max-width: 599px) {
+  .load-chart__annotation--center {
+    transform: translateX(calc(-100% - 4px));
+  }
+}
+
+/* Gráficos muito estreitos (celular): os textos quebram linha e o da rampa encosta na direita do gráfico. */
+@container load-chart-plot (max-width: 239px) {
+  .load-chart__annotation {
+    max-width: 64px;
+    white-space: normal;
+  }
+
+  .load-chart__annotation--center {
+    text-align: right;
+  }
+
+  /* O left vem da marcação (hora da rampa), por isso o !important. */
+  .load-chart__annotation--start {
+    left: auto !important;
+    right: 0;
+    margin-left: 0;
+    text-align: right;
+  }
+}
+
+/* Eixo X: linha e rótulos de 0h a 24h, distribuídos na largura do gráfico. */
+.load-chart__x-axis {
+  padding-left: 43px;
+}
+
+.load-chart__x-labels {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #e4e4e0;
+  white-space: nowrap;
+}
+
+.load-chart__x-labels p {
+  font-size: 12px;
+  color: #9a9a94;
+}
+
+/* Cards estreitos: menos rótulos no eixo X, para não encavalarem (de 4 em 4 horas e, no celular, de 8 em 8). */
+@container load-chart (max-width: 450px) {
+  .load-chart__x-labels p:nth-child(even) {
+    display: none;
+  }
+}
+
+@container load-chart (max-width: 270px) {
+  .load-chart__x-labels p:not(:nth-child(4n + 1)) {
+    display: none;
+  }
+}
+
+/* Tooltip: uma faixa por hora (marcação em _tooltips), por cima do gráfico e das anotações.
+   Linha, pontos e card só aparecem com o mouse na faixa e não capturam o mouse, para não travar o hover em outra hora. */
+.load-chart__hover {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.load-chart__guide,
+.load-chart__dot,
+.load-chart__tooltip {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.load-chart__hover:hover .load-chart__guide,
+.load-chart__hover:hover .load-chart__dot,
+.load-chart__hover:hover .load-chart__tooltip {
+  visibility: visible;
+}
+
+.load-chart__guide {
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed #9a9a94;
+}
+
+/* O centro do ponto fica na hora e no valor. */
+.load-chart__dot {
+  width: 8px;
+  height: 8px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px rgba(4, 73, 71, 0.2);
+}
+
+.load-chart__dot--net {
+  background-color: #2bdcd1;
+}
+
+.load-chart__dot--gross {
+  background-color: #044947;
+}
+
+/* Card com a hora e os três valores, no topo do gráfico, com a sombra do card do gráfico. */
+.load-chart__tooltip {
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.35);
+  white-space: nowrap;
+}
+
+.load-chart__tooltip--right {
+  margin-left: 8px;
+}
+
+.load-chart__tooltip--left {
+  transform: translateX(calc(-100% - 8px));
+}
+
+.load-chart__tooltip .load-chart__tooltip-hour {
+  font-size: 12px;
+  font-weight: 600;
+  color: #044947;
+}
+
+.load-chart__tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.load-chart__tooltip-row p {
+  font-size: 12px;
+  color: #6b6b66;
+}
+
+/* Valores alinhados à direita do card. */
+.load-chart__tooltip-row .load-chart__tooltip-value {
+  margin-left: auto;
+  padding-left: 12px;
+  font-weight: 600;
+  color: #044947;
+}

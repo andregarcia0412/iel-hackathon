@@ -1,0 +1,56 @@
+/* Fechamento do chat: o painel encolhe de volta até o círculo da estrela, o inverso da abertura em chat.css.
+   Como o Streamlit remove o painel ao fechar, quem anima é o botão flutuante que o substitui:
+   um card do tamanho do painel atrás dele encolhe até o círculo e a estrela volta girando.
+   Este arquivo só é injetado na execução logo após fechar (ui.py), então a animação não roda ao carregar a página.
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Fica atrás do botão (o botão fixo já cria o próprio contexto de empilhamento) e não recebe cliques. */
+.st-key-chat_fab::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  width: min(490px, calc(100vw - 32px));
+  height: min(498px, calc(100dvh - 80px));
+  border-radius: 16px;
+  background: url("app/static/chat_glow.png") left bottom / 490px 245px no-repeat, #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+  visibility: hidden;
+  pointer-events: none;
+  animation: chat-panel-close 0.35s cubic-bezier(0.3, 0, 0.8, 0.15);
+}
+
+.st-key-chat_fab button {
+  animation: chat-star-in 0.35s ease-out;
+}
+
+@keyframes chat-panel-close {
+  from {
+    visibility: visible;
+    clip-path: inset(-40px round 56px);
+  }
+  to {
+    visibility: visible;
+    clip-path: inset(calc(100% - 80px) 0 0 calc(100% - 80px) round 40px);
+  }
+}
+
+@keyframes chat-star-in {
+  0%,
+  50% {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .st-key-chat_fab::before,
+  .st-key-chat_fab button {
+    animation: none;
+  }
+}
