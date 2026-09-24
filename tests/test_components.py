@@ -372,11 +372,54 @@ def test_load_chart_missing_hour_breaks_the_lines():
     assert len(re.findall(r"<polygon ", svg)) == 2
 
 
+def _tooltip_values(markup: str) -> list[list[str]]:
+    """Os três valores (líquida, bruta, MMGD) do card de cada hora."""
+    zones = markup.split('class="load-chart__hover"')[1:]
+    return [re.findall(r'class="load-chart__tooltip-value">([^<]+)</p>', zone) for zone in zones]
+
+
+def test_load_chart_tooltip_shows_net_gross_and_mmgd_for_every_hour():
+    markup = _load_chart_markup()
+
+    values = _tooltip_values(markup)
+    assert len(values) == 24
+    # 12h: líquida 37 GW, bruta 47 GW, MMGD = bruta − líquida.
+    assert values[12] == ["37,00 GW", "47,00 GW", "10,00 GW"]
+    assert re.findall(r'class="load-chart__tooltip-hour">(\d+h)</p>', markup) == [f"{hour}h" for hour in range(24)]
+    for label in ("Carga líquida", "Carga bruta", "MMGD"):
+        assert markup.count(f"<p>{label}</p>") == 24
+
+
+def test_load_chart_tooltip_zones_cover_the_plot_without_overflowing():
+    markup = _load_chart_markup()
+
+    zones = re.findall(r'class="load-chart__hover" style="left: ([\d.]+)%; width: ([\d.]+)%"', markup)
+    assert zones[0] == ("0", "2.083")
+    assert zones[12] == ("47.92", "4.167")
+    left, width = map(float, zones[-1])
+    assert left + width == pytest.approx(100, abs=0.01)
+    # Até o meio do dia o card abre à direita; depois, à esquerda.
+    sides = re.findall(r"load-chart__tooltip--(right|left)", markup)
+    assert sides == ["right"] * 12 + ["left"] * 12
+
+
+def test_load_chart_tooltip_missing_value_shows_placeholder():
+    net = list(NET)
+    net[5] = None
+    markup = _load_chart_markup(net=net)
+
+    assert _tooltip_values(markup)[5] == ["-- GW", f"{GROSS[5] / 1000:.2f}".replace(".", ",") + " GW", "-- GW"]
+    zone = markup.split('class="load-chart__hover"')[6]
+    assert "load-chart__dot--net" not in zone
+    assert "load-chart__dot--gross" in zone
+
+
 def test_load_chart_without_data_shows_placeholder_axis():
     markup = _load_chart_markup(net=[None] * 24, gross=[None] * 24)
 
     assert markup.count(">--GW</p>") == 8
     assert "<img" not in markup
+    assert "load-chart__hover" not in markup
 
 
 def test_load_chart_rejects_wrong_number_of_hours():

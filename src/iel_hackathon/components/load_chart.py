@@ -37,6 +37,7 @@ def render_load_chart(
 
     A faixa `solar_window` (horas de início e fim) é destacada e marca o vale: a hora de menor carga líquida dentro dela.
     `ramp` marca o intervalo da rampa de fim de tarde.
+    Com o mouse sobre uma hora, um card mostra a carga líquida, a bruta e a MMGD (bruta − líquida) daquela hora.
     """
     # CSS só com <style> vai para o container de eventos do Streamlit: repeti-lo a cada gráfico não ocupa espaço.
     st.html(_CSS_PATH)
@@ -172,7 +173,51 @@ def _plot(net, gross, y, solar_window, ramp) -> str:
         f'<img class="load-chart__svg" src="{src}" '
         'alt="Carga líquida, carga bruta e MMGD previstas por hora">'
     )
-    return image + "".join(annotations)
+    return image + "".join(annotations) + _tooltips(net, gross, y)
+
+
+def _tooltips(net, gross, y) -> str:
+    """Uma faixa por hora que, com o mouse em cima, mostra a linha da hora, os pontos das curvas e os três valores.
+
+    Só HTML e CSS: o st.html não roda JavaScript. A MMGD é a bruta − a líquida, a mesma área desenhada no gráfico.
+    """
+    zones = []
+    for hour in range(_HOURS):
+        # A faixa vai de meia hora antes a meia hora depois; a primeira começa em 0h e a última vai até 24h.
+        start = max(hour - 0.5, 0)
+        end = _HOURS if hour == _HOURS - 1 else hour + 0.5
+        guide = _percent((hour - start) / (end - start))
+        dots = "".join(
+            f'<span class="load-chart__dot load-chart__dot--{kind}" '
+            f'style="left: {guide}; top: {_percent(y(value) / _HEIGHT)}"></span>'
+            for kind, value in (("gross", gross[hour]), ("net", net[hour]))
+            if value is not None
+        )
+        mmgd = gross[hour] - net[hour] if net[hour] is not None and gross[hour] is not None else None
+        rows = "".join(
+            '<div class="load-chart__tooltip-row">'
+            f'<span class="load-chart__swatch load-chart__swatch--{kind}"></span>'
+            f'<p>{label}</p><p class="load-chart__tooltip-value">{escape(_format_tooltip_gw(value))}</p>'
+            "</div>"
+            for kind, label, value in (
+                ("net", "Carga líquida", net[hour]),
+                ("gross", "Carga bruta", gross[hour]),
+                ("mmgd", "MMGD", mmgd),
+            )
+        )
+        # Até o meio do dia o card abre à direita da linha; depois, à esquerda, para não sair do gráfico.
+        side = "right" if hour < _HOURS // 2 else "left"
+        zones.append(
+            f'<div class="load-chart__hover" style="left: {_percent(start / _HOURS)}; '
+            f'width: {_percent((end - start) / _HOURS)}">'
+            f'<span class="load-chart__guide" style="left: {guide}"></span>'
+            f"{dots}"
+            f'<div class="load-chart__tooltip load-chart__tooltip--{side}" style="left: {guide}">'
+            f'<p class="load-chart__tooltip-hour">{hour}h</p>{rows}'
+            "</div>"
+            "</div>"
+        )
+    return "".join(zones)
 
 
 def _annotation(text: str, hour: float, *, align: Literal["center", "start"]) -> str:
@@ -231,6 +276,12 @@ def _y_scale(minimum: float, maximum: float) -> tuple[float, float]:
 def _format_gw(value: float) -> str:
     text = f"{value:.3f}".rstrip("0").rstrip(".")
     return f"{text.replace('.', ',')}GW"
+
+
+def _format_tooltip_gw(value: float | None) -> str:
+    if value is None:
+        return f"{_MISSING} GW"
+    return f"{value:.2f}".replace(".", ",") + " GW"
 
 
 def _to_gw(value: float | None) -> float | None:

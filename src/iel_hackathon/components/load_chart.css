@@ -188,3 +188,98 @@
     display: none;
   }
 }
+
+/* Tooltip: uma faixa por hora (marcação em _tooltips), por cima do gráfico e das anotações.
+   Linha, pontos e card só aparecem com o mouse na faixa e não capturam o mouse, para não travar o hover em outra hora. */
+.load-chart__hover {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.load-chart__guide,
+.load-chart__dot,
+.load-chart__tooltip {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.load-chart__hover:hover .load-chart__guide,
+.load-chart__hover:hover .load-chart__dot,
+.load-chart__hover:hover .load-chart__tooltip {
+  visibility: visible;
+}
+
+.load-chart__guide {
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed #9a9a94;
+}
+
+/* O centro do ponto fica na hora e no valor. */
+.load-chart__dot {
+  width: 8px;
+  height: 8px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px rgba(4, 73, 71, 0.2);
+}
+
+.load-chart__dot--net {
+  background-color: #2bdcd1;
+}
+
+.load-chart__dot--gross {
+  background-color: #044947;
+}
+
+/* Card com a hora e os três valores, no topo do gráfico, com a sombra do card do gráfico. */
+.load-chart__tooltip {
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.35);
+  white-space: nowrap;
+}
+
+.load-chart__tooltip--right {
+  margin-left: 8px;
+}
+
+.load-chart__tooltip--left {
+  transform: translateX(calc(-100% - 8px));
+}
+
+.load-chart__tooltip .load-chart__tooltip-hour {
+  font-size: 12px;
+  font-weight: 600;
+  color: #044947;
+}
+
+.load-chart__tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.load-chart__tooltip-row p {
+  font-size: 12px;
+  color: #6b6b66;
+}
+
+/* Valores alinhados à direita do card. */
+.load-chart__tooltip-row .load-chart__tooltip-value {
+  margin-left: auto;
+  padding-left: 12px;
+  font-weight: 600;
+  color: #044947;
+}
