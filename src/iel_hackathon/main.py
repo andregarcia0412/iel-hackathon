@@ -76,6 +76,16 @@ with filter_bar():
     render_filter("Submercado", SUBMERCADOS, key="filtro_submercado")
     render_filter("Período", PERIODOS, key="filtro_periodo")
 
+# Visão do dashboard que o assistente do chat "lê" (ver chat/prompts.py). Ao ligar
+# os cards aos modelos de predição, alimente estas estruturas com os valores reais.
+st.session_state["dashboard_data"] = {
+    "submercado": st.session_state.get("filtro_submercado", SUBMERCADOS[0]),
+    "periodo": st.session_state.get("filtro_periodo", PERIODOS[0]),
+    "cards": CARDS,
+    "period_data": PERIOD_DATA,
+    "mape_table": MAPE_TABLE,
+}
+
 for column, card in zip(st.columns(len(CARDS), gap=12), CARDS):
     with column:
         render_metric_card(**card)

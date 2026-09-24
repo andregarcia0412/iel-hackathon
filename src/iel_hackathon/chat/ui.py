@@ -5,14 +5,17 @@ from pathlib import Path
 
 import streamlit as st
 
-from . import model
+from . import model, prompts
 
 TITLE = "IA Assistente"
-EMPTY_STATE = "Envie uma mensagem para iniciar"
+EMPTY_STATE = "Envie uma mensagem para iniciar, ou toque em uma sugestão:"
 # Mostrado no balão da IA até chegar o primeiro trecho da resposta.
 TYPING_INDICATOR = "...."
-INPUT_PLACEHOLDER = "Digite sua mensagem..."
+INPUT_PLACEHOLDER = "Pergunte sobre o dashboard..."
 ERROR_MESSAGE = "Não foi possível obter uma resposta do modelo. Tente novamente."
+NOT_CONFIGURED_MESSAGE = (
+    "O assistente ainda não está configurado: defina a variável OLLAMA_API_KEY no ambiente."
+)
 
 _CSS_PATH = Path(__file__).with_name("chat.css")
 # Altura fixa exigida pelo `autoscroll`; o CSS a substitui para ocupar o espaço livre do painel.
@@ -63,17 +66,28 @@ def _chat() -> None:
         # Lido antes de preencher as mensagens para o estado vazio não aparecer junto do primeiro envio.
         prompt = st.chat_input(INPUT_PLACEHOLDER, key="chat_input", submit_mode="disable")
 
+    # Chip de sugestão clicado no rerun anterior (o on_click grava aqui).
+    suggestion = st.session_state.pop("chat_suggestion", None)
+
     history: list[model.Message] = st.session_state.chat_history
     with messages_box:
         for message in history:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
-        if prompt:
-            _respond(prompt, history)
+        if prompt or suggestion:
+            _respond(prompt or suggestion, history)
         elif not history:
             # A estrela acima do texto vem do CSS.
             with st.container(key="chat_empty"):
                 st.caption(EMPTY_STATE)
+                for index, suggestion_text in enumerate(prompts.SUGGESTIONS):
+                    st.button(
+                        suggestion_text,
+                        key=f"chat_suggestion_{index}",
+                        type="tertiary",
+                        on_click=_set_suggestion,
+                        args=(suggestion_text,),
+                    )
 
 
 def _respond(prompt: str, history: list[model.Message]) -> None:
@@ -83,10 +97,14 @@ def _respond(prompt: str, history: list[model.Message]) -> None:
     with st.chat_message("assistant"):
         # O primeiro trecho da resposta (ou o erro) substitui o indicador no mesmo espaço.
         slot = st.empty()
+        if not model.is_configured():
+            slot.error(NOT_CONFIGURED_MESSAGE)
+            return
         slot.markdown(TYPING_INDICATOR)
         try:
+            snapshot = prompts.build_dashboard_snapshot(st.session_state.get("dashboard_data"))
             with slot:
-                reply = st.write_stream(model.stream_response(history))
+                reply = st.write_stream(model.stream_response(history, snapshot))
         except Exception:
             _logger.exception("Falha ao gerar a resposta do modelo")
             slot.error(ERROR_MESSAGE)
@@ -96,3 +114,7 @@ def _respond(prompt: str, history: list[model.Message]) -> None:
 
 def _set_open(is_open: bool) -> None:
     st.session_state.chat_open = is_open
+
+
+def _set_suggestion(text: str) -> None:
+    st.session_state["chat_suggestion"] = text
