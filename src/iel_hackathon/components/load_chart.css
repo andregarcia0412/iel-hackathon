@@ -1,0 +1,127 @@
+/* Estilos do gráfico de cargas. As classes "load-chart..." vêm da marcação gerada em load_chart.py.
+   Não use o sinal de menor neste arquivo, nem em comentários: o frontend do Streamlit descarta o estilo inteiro. */
+
+/* Cartão branco com a sombra "sombra" do design: legenda em cima e gráfico embaixo, na altura do design. */
+.load-chart {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 386px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 24px rgba(136, 211, 177, 0.25);
+}
+
+.load-chart p {
+  margin: 0;
+  line-height: normal;
+}
+
+/* Legenda: alinhada ao início do gráfico, depois da coluna do eixo Y. */
+.load-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding-left: 43px;
+}
+
+.load-chart__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+/* O tamanho vai no próprio texto: o Streamlit define o tamanho de todo parágrafo. */
+.load-chart__legend-item p {
+  font-size: 12px;
+  color: #6b6b66;
+}
+
+.load-chart__swatch {
+  flex-shrink: 0;
+  width: 20px;
+  height: 3px;
+}
+
+.load-chart__swatch--net {
+  background: linear-gradient(90deg, #cae300 0%, #2bdcd1 100%);
+}
+
+/* Traço tracejado: 4px de cor e 4px de vão, como no design. */
+.load-chart__swatch--gross {
+  background: repeating-linear-gradient(90deg, #044947 0 4px, transparent 4px 8px);
+}
+
+.load-chart__swatch--mmgd {
+  height: 10px;
+  background-color: rgba(9, 208, 117, 0.25);
+  opacity: 0.5;
+}
+
+/* Eixo Y à esquerda (rótulos + linha vertical) e a área do gráfico, com a altura do design. */
+.load-chart__body {
+  display: flex;
+  height: 254px;
+}
+
+.load-chart__y-axis {
+  position: relative;
+  flex-shrink: 0;
+  width: 42px;
+  border-right: 1px solid #e4e4e0;
+}
+
+/* O centro de cada rótulo fica na altura do valor. */
+.load-chart__y-label {
+  position: absolute;
+  left: 0;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #9a9a94;
+  white-space: nowrap;
+}
+
+.load-chart__plot {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.load-chart__svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Textos do vale e da rampa, centralizados na hora que marcam. */
+.load-chart__annotation {
+  position: absolute;
+  top: 17px;
+  transform: translateX(-50%);
+  font-size: 11.5px;
+  color: #6b6b66;
+  white-space: nowrap;
+}
+
+/* Eixo X: linha e rótulos de 0h a 24h, distribuídos na largura do gráfico. */
+.load-chart__x-axis {
+  padding-left: 43px;
+}
+
+.load-chart__x-labels {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #e4e4e0;
+  white-space: nowrap;
+}
+
+.load-chart__x-labels p {
+  font-size: 12px;
+  color: #9a9a94;
+}

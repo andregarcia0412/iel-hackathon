@@ -8,13 +8,17 @@ from iel_hackathon.components import (
     render_data_card,
     render_filter,
     render_heatmap_table,
+    render_load_chart,
     render_metric_card,
+    render_section_title,
 )
+from iel_hackathon.forecast import load_day_forecast
 from iel_hackathon.login import render_login
 from iel_hackathon.sidebar import render_sidebar
 
-SUBMERCADOS = ["Sudeste e Centro-oeste", "Sul", "Nordeste", "Norte"]
-PERIODOS = ["Próximo dia", "Próximos 7 dias"]
+# Opções dos filtros → código do submercado e horizonte (em dias) nas previsões do modelo.
+SUBMERCADOS = {"Sudeste e Centro-oeste": "SECO", "Sul": "S", "Nordeste": "NE", "Norte": "N"}
+PERIODOS = {"Próximo dia": 1, "Próximos 7 dias": 7}
 
 # Página de teste dos componentes, com os textos de exemplo do design.
 CARDS = [
@@ -79,15 +83,20 @@ def _dashboard() -> None:
     render_sidebar()
 
     with filter_bar():
-        render_filter("Submercado", SUBMERCADOS, key="filtro_submercado")
-        render_filter("Período", PERIODOS, key="filtro_periodo")
+        submercado = render_filter("Submercado", list(SUBMERCADOS), key="filtro_submercado")
+        periodo = render_filter("Período", list(PERIODOS), key="filtro_periodo")
 
     for column, card in zip(st.columns(len(CARDS), gap=12), CARDS):
         with column:
             render_metric_card(**card)
 
-    # Largura do card no design; sem ela o card esticaria na página toda.
-    with st.container(width=370):
+    render_section_title("Previsão de Cargas")
+    # Larguras do gráfico e do card de dados no design.
+    chart_column, data_column = st.columns([885, 370], gap=16)
+    with chart_column:
+        forecast = load_day_forecast(SUBMERCADOS[submercado], PERIODOS[periodo])
+        render_load_chart(net=forecast.net, gross=forecast.gross)
+    with data_column:
         render_data_card(**PERIOD_DATA)
 
     render_heatmap_table(**MAPE_TABLE)
