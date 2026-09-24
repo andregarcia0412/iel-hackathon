@@ -8,3 +8,9 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local env (chaves de API)
+.env
+
+# Streamlit secrets (chaves de API) — nunca commitar
+.streamlit/secrets.toml

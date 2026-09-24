@@ -118,23 +118,42 @@ def _dashboard() -> None:
         periodo = render_filter("Período", list(PERIODOS), key="filtro_periodo")
     codigo, horizonte = SUBMERCADOS[submercado], PERIODOS[periodo]
 
+    # Valores do dashboard calculados uma vez: renderizados na tela e expostos ao assistente
+    # do chat via `dashboard_data` (ver chat/prompts.py → build_dashboard_snapshot).
+    cards = _metric_cards(load_period_summary(codigo, horizonte))
+    forecast = load_day_forecast(codigo, horizonte)
+    period_data = _period_data(load_day_context(codigo, horizonte), horizonte)
+    mape_by_band = load_mape_by_band(horizonte)
+    mape_values = {row: mape_by_band[code] for row, code in MAPE_ROWS.items()}
+
+    st.session_state["dashboard_data"] = {
+        "submercado": submercado,
+        "periodo": periodo,
+        "cards": cards,
+        "period_data": period_data,
+        "mape_table": {**MAPE_TABLE, "values": mape_values},
+        "load_chart": {
+            "date": f"{forecast.date:%d/%m/%Y}",
+            "net": forecast.net,
+            "gross": forecast.gross,
+        },
+    }
+
     # As keys dos containers são usadas pelo dashboard.css para distribuir a largura e a altura da janela.
     with st.container(key="metric_cards"):
-        for card in _metric_cards(load_period_summary(codigo, horizonte)):
+        for card in cards:
             render_metric_card(**card)
 
     with st.container(key="load_section"):
         render_section_title("Previsão de Cargas")
         with st.container(key="load_row", horizontal=True):
             with st.container(key="load_chart_column"):
-                forecast = load_day_forecast(codigo, horizonte)
                 render_load_chart(net=forecast.net, gross=forecast.gross)
             with st.container(key="load_data_column"):
-                render_data_card(**_period_data(load_day_context(codigo, horizonte), horizonte))
+                render_data_card(**period_data)
 
     with st.container(key="mape_section"):
-        mape = load_mape_by_band(horizonte)
-        render_heatmap_table(**MAPE_TABLE, values={row: mape[code] for row, code in MAPE_ROWS.items()})
+        render_heatmap_table(**MAPE_TABLE, values=mape_values)
 
     render_chat()
 

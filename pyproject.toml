@@ -8,6 +8,8 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "ollama>=0.6.2",
+    "python-dotenv>=1.2.3",
     "streamlit>=1.64.0",
 ]
 
@@ -22,3 +24,7 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+
+# O diretório hackathon_proenergia/ é um projeto à parte (requirements próprios).
+[tool.pytest.ini_options]
+testpaths = ["tests"]

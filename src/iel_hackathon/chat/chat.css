@@ -203,6 +203,31 @@
   opacity: 1;
 }
 
+/* Chips de sugestão no estado vazio: pílulas com borda verde-escura sob o convite. */
+.st-key-chat_empty [class*="st-key-chat_suggestion"] {
+  width: 100%;
+}
+
+.st-key-chat_empty [class*="st-key-chat_suggestion"] button {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid #044947;
+  border-radius: 9999px;
+  background-color: #ffffff;
+}
+
+.st-key-chat_empty [class*="st-key-chat_suggestion"] button:hover,
+.st-key-chat_empty [class*="st-key-chat_suggestion"] button:active,
+.st-key-chat_empty [class*="st-key-chat_suggestion"] button:focus:not(:active) {
+  border-color: #044947;
+  background-color: #c1f3dd;
+}
+
+.st-key-chat_empty [class*="st-key-chat_suggestion"] button p {
+  font-size: 13px;
+  color: #044947;
+}
+
 /* Balões sem avatar: usuário à direita em verde claro, assistente à esquerda em cinza.
    O canto do lado de quem fala fica reto. */
 .st-key-chat_panel [data-testid="stChatMessage"] {
